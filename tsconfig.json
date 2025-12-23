@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "target": "esnext",
+    "strict": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "useUnknownInCatchVariables": true,
+    "esModuleInterop": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": false,
+    "rootDir": "./src",
+    "outDir": "./build",
+    "baseUrl": "./src",
+  },
+  "include": [
+    "src/**/*",
+    "tests",
+    "tests"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/**/*.spec.ts"
+  ],
+}
