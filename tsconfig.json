@@ -19,11 +19,14 @@
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": false,
-    "outDir": "./build",
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"],
-      "@/tests/*": ["../tests/*"]
+      "@/*": [
+        "*"
+      ],
+      "@/tests/*": [
+        "../tests/*"
+      ]
     }
   },
   "include": [
