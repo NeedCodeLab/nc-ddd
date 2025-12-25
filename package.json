@@ -1,11 +1,25 @@
 {
   "name": "nc-ddd",
   "version": "0.0.1",
-  "description": "ddd base classes implementation",
-  "main": "index.js",
+  "description": "A set of base classes for implementing Domain-Driven Design patterns.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "test": "jest",
-    "check": "biome check"
+    "check": "biome check",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -24,8 +38,8 @@
     "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"
   },
-  "dependencies": {
-    "@sweet-monads/either": "^3.3.1",
-    "valibot": "^1.2.0"
+  "peerDependencies": {
+    "@sweet-monads/either": ">=3.0.0",
+    "valibot": ">=1.0.0"
   }
 }

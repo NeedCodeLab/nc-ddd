@@ -15,22 +15,23 @@
     "noUnusedParameters": true,
     "useUnknownInCatchVariables": true,
     "esModuleInterop": true,
-    "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": false,
-    "rootDir": "./src",
     "outDir": "./build",
     "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"],
+      "@/tests/*": ["../tests/*"]
+    }
   },
   "include": [
-    "src/**/*",
+    "src",
     "tests",
-    "tests"
+    "example"
   ],
   "exclude": [
-    "node_modules",
-    "src/**/*.spec.ts"
-  ],
+    "node_modules"
+  ]
 }

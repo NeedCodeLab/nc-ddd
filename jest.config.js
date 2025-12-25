@@ -7,7 +7,11 @@ export const testEnvironment = "node";
 export const transform = {
     ...tsJestTransformCfg,
 };
-export const testRegex = ".*/src/.*\\.spec\\.ts$"
+export const testMatch = ["**/tests/**/*.spec.ts"];
+export const moduleNameMapper = {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/tests/(.*)$': '<rootDir>/tests/$1',
+};
 
 // "jest": {
 //   "moduleFileExtensions": [
