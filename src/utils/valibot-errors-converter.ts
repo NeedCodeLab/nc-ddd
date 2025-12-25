@@ -1,6 +1,6 @@
 import { type Either, left, right } from "@sweet-monads/either";
-import type { ValueObjectValidationError } from "types/value-object.validation-error";
 import type { BaseIssue, BaseSchema, InferOutput, IssuePathItem, SafeParseResult } from "valibot";
+import type { ValueObjectValidationError } from "../types/value-object.validation-error";
 
 export function convertValibotResult<
   const TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,

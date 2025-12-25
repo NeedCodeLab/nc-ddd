@@ -1,7 +1,7 @@
 import type { Either } from "@sweet-monads/either";
-import type { ValueObjectValidationError } from "types/value-object.validation-error";
-import { convertValibotResult } from "utils/valibot-errors-converter";
 import * as v from "valibot";
+import { convertValibotResult } from "@/utils/valibot-errors-converter";
+import type { ValueObjectValidationError } from "../types/value-object.validation-error";
 
 type DeepUnwrap<T> =
   T extends ValueObject<infer U>
@@ -143,12 +143,12 @@ export abstract class ValueObject<T> {
   }
 }
 
-export function createValueObjectFactory<Props, VObject extends ValueObject<Props>>(
-  schema: v.BaseSchema<unknown, Props, v.BaseIssue<unknown>>,
-  from: (props: Props) => VObject,
-) {
+export function createValueObjectFactory<
+  Schema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
+  VObject extends ValueObject<v.InferOutput<Schema>>,
+>(schema: Schema, from: (props: v.InferOutput<Schema>) => VObject) {
   return function create(
-    value: unknown,
+    value: v.InferInput<Schema>,
     validationKey: string,
   ): Either<ValueObjectValidationError, VObject> {
     const parseResult = v.safeParse(schema, value);
