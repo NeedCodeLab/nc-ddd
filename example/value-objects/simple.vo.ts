@@ -1,6 +1,5 @@
-import { left, right } from "@sweet-monads/either";
 import * as v from "valibot";
-import { VO } from "@/core/vo";
+import { VO, voFactory } from "@/core/vo";
 
 export const SimpleVOSchema = v.pipe(
   v.string("It must be a string"),
@@ -15,12 +14,7 @@ export class SimpleVO extends VO<typeof SimpleVOSchema> {
     super(props);
   }
 
-  public static create(value: v.InferInput<typeof SimpleVOSchema>) {
-    const parseResult = v.safeParse(SimpleVOSchema, value);
-    if (!parseResult.success) {
-      const flattedErrors = v.flatten<typeof SimpleVOSchema>(parseResult.issues);
-      return left(flattedErrors);
-    }
-    return right(new SimpleVO(parseResult.output));
-  }
+  public static create = (val: v.InferInput<typeof SimpleVOSchema>) => {
+    return voFactory(val, SimpleVOSchema, (props) => new SimpleVO(props));
+  };
 }

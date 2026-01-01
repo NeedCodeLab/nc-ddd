@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import type * as v from "valibot";
+import { left, right } from "@sweet-monads/either";
+import * as v from "valibot";
 
 export abstract class VO<Schema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>> {
   private _value: v.InferOutput<Schema>;
@@ -20,4 +21,17 @@ export abstract class VO<Schema extends v.BaseSchema<unknown, unknown, v.BaseIss
   get value() {
     return this._value;
   }
+}
+
+export function voFactory<S extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>(
+  value: v.InferInput<typeof schema>,
+  schema: S,
+  constructorFn: (props: v.InferOutput<S>) => VO<S>,
+) {
+  const parseResult = v.safeParse(schema, value);
+  if (!parseResult.success) {
+    const flattedErrors = v.flatten<typeof schema>(parseResult.issues);
+    return left(flattedErrors);
+  }
+  return right(constructorFn(parseResult.output));
 }

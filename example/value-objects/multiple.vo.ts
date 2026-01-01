@@ -1,6 +1,5 @@
-import { left, right } from "@sweet-monads/either";
 import * as v from "valibot";
-import { VO } from "@/core/vo";
+import { VO, voFactory } from "@/core/vo";
 
 export const MultipleVOSchema = v.variant("type", [
   v.object({
@@ -24,12 +23,7 @@ export class MultipleVO extends VO<typeof MultipleVOSchema> {
     super(props);
   }
 
-  public static create(value: v.InferInput<typeof MultipleVOSchema>) {
-    const parseResult = v.safeParse(MultipleVOSchema, value);
-    if (!parseResult.success) {
-      const flattedErrors = v.flatten<typeof MultipleVOSchema>(parseResult.issues);
-      return left(flattedErrors);
-    }
-    return right(new MultipleVO(parseResult.output));
-  }
+  public static create = (val: v.InferInput<typeof MultipleVOSchema>) => {
+    return voFactory(val, MultipleVOSchema, (props) => new MultipleVO(props));
+  };
 }
