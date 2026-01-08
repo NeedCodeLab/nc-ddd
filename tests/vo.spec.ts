@@ -1,4 +1,3 @@
-// import { MultipleVO } from "../example/value-objects/multiple.vo";
 import { merge } from "@sweet-monads/either";
 import { MultipleVO } from "../example/value-objects/multiple.vo";
 import { SimpleVO } from "../example/value-objects/simple.vo";
@@ -17,7 +16,7 @@ describe("Simple vo tests", () => {
     const eitherVO = SimpleVO.create("");
     eitherVO.fold(
       (error) => {
-        expect(error.root).toEqual(["It can`t be empty"]);
+        expect(error).toEqual(["It can`t be empty"]);
       },
       () => fail("Expected a Left, but received a Right"),
     );
@@ -63,10 +62,7 @@ describe("Multiple vo tests", () => {
     const eitherVO = MultipleVO.create({ type: "email", value: "invalid-email" });
     eitherVO.fold(
       (error) => {
-        expect(error).toHaveProperty("nested");
-        const contactError = error.nested;
-        expect(contactError).toHaveProperty("value");
-        expect(contactError?.value).toEqual(["Invalid email"]);
+        expect(error).toEqual({ value: ["Invalid email"] });
       },
       () => fail("Expected a Left, but received a Right"),
     );

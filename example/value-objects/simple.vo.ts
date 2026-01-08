@@ -1,5 +1,6 @@
 import * as v from "valibot";
-import { VO, voFactory } from "@/core/vo";
+import { VO } from "@/core/vo";
+import { voFactory } from "@/helpers/vo-factory";
 
 export const SimpleVOSchema = v.pipe(
   v.string("It must be a string"),
