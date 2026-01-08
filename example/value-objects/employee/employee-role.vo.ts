@@ -1,4 +1,4 @@
-import * as v from "valibot"; // Добавлен импорт * as v
+import * as v from "valibot";
 import { VO } from "@/core/vo";
 import { voFactory } from "@/helpers/vo-factory";
 
@@ -6,7 +6,7 @@ export enum RoleEnum {
   staff = "staff",
   admin = "admin",
 }
-export const RoleVOSchema = v.enum_(RoleEnum); // Исправлено определение схемы
+export const RoleVOSchema = v.enum_(RoleEnum);
 type LeagueRoleVOProps = v.InferInput<typeof RoleVOSchema>;
 
 export class EmployeeRoleVO extends VO<typeof RoleVOSchema> {

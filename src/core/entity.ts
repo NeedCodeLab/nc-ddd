@@ -14,7 +14,7 @@ export abstract class Entity<
     this._value = props;
   }
 
-  get primitive() {
+  get primitive(): InferEntityProps<Props> {
     return Object.fromEntries(
       Object.entries(this._value).map(([k, v]) => {
         if (Array.isArray(v)) {
@@ -22,7 +22,7 @@ export abstract class Entity<
         }
         return [k, v.value];
       }),
-    );
+    ) as InferEntityProps<Props>;
   }
 
   get value() {
