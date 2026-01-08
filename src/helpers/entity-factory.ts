@@ -10,16 +10,22 @@ type VOErrors = string[] | Record<string, unknown> | undefined;
 
 type VOCreator<I, V extends AnyVO> = (value: I) => Either<VOErrors, V>;
 
-export type EntityPropsCreators<
-  Props extends Record<string, unknown>,
-  DTO extends { [K in keyof Props]: unknown },
-> = {
-  [K in keyof Props]: Props[K] extends (infer V)[]
-    ? V extends AnyVO
-      ? VOCreator<DTO[K] extends (infer I)[] ? I : never, V>
-      : never
-    : Props[K] extends AnyVO
-      ? VOCreator<DTO[K], Props[K]>
+// biome-ignore lint/suspicious/noExplicitAny: <maybe later>
+type AnyVOClass<I = any, V extends AnyVO = AnyVO> = {
+  create: VOCreator<I, V>;
+};
+
+type AnyVOClassOrArray = AnyVOClass | readonly [AnyVOClass];
+
+type Classes = Record<string, AnyVOClassOrArray>;
+
+export type InferPropsFromClasses<T extends Classes> = {
+  // biome-ignore lint/suspicious/noExplicitAny: <maybe later>
+  [K in keyof T]: T[K] extends readonly [AnyVOClass<any, infer V>]
+    ? V[]
+    : // biome-ignore lint/suspicious/noExplicitAny: <maybe later>
+      T[K] extends AnyVOClass<any, infer V>
+      ? V
       : never;
 };
 
@@ -28,27 +34,29 @@ type Errors<Props> = {
 };
 
 export function entityFactory<
-  Props extends { [key: string]: AnyVO | AnyVO[] },
+  const C extends Classes,
+  Props extends InferPropsFromClasses<C>,
   E extends Entity<Props>,
-  DTO extends InferEntityProps<Props>,
 >(
-  dto: DTO,
-  creators: EntityPropsCreators<Props, DTO>,
+  dto: InferEntityProps<Props>,
+  classes: C,
   constructorFn: (props: Props) => E,
 ): Either<Errors<Props>, E> {
   const props = {} as Props;
   const errors: Errors<Props> = {};
 
-  for (const key of Object.keys(creators) as (keyof Props)[]) {
-    const creator = creators[key];
-    const value = (dto as InferEntityProps<Props>)[key];
+  for (const key of Object.keys(classes) as (keyof C)[]) {
+    const classOrArray = classes[key];
+    const voClass = Array.isArray(classOrArray) ? classOrArray[0] : classOrArray;
+    const creator = voClass.create;
+    const value = dto[key as keyof Props];
 
     if (Array.isArray(value)) {
       const arrayProps: AnyVO[] = [];
       const arrayErrors: Record<number, VOErrors> = {};
 
       (value as unknown[]).forEach((item, index) => {
-        const result = (creator as VOCreator<unknown, AnyVO>)(item);
+        const result = creator(item);
         if (result.isLeft()) {
           arrayErrors[index] = result.value;
         } else {
@@ -57,16 +65,16 @@ export function entityFactory<
       });
 
       if (Object.keys(arrayErrors).length > 0) {
-        errors[key] = arrayErrors as Errors<Props>[keyof Props];
+        errors[key as keyof Props] = arrayErrors as Errors<Props>[keyof Props];
       } else {
-        props[key] = arrayProps as Props[keyof Props];
+        props[key as keyof Props] = arrayProps as Props[keyof Props];
       }
     } else {
-      const result = (creator as VOCreator<unknown, AnyVO>)(value);
+      const result = creator(value);
       if (result.isLeft()) {
-        errors[key] = result.value as Errors<Props>[keyof Props];
+        errors[key as keyof Props] = result.value as Errors<Props>[keyof Props];
       } else {
-        props[key] = result.value as Props[keyof Props];
+        props[key as keyof Props] = result.value as Props[keyof Props];
       }
     }
   }
