@@ -15,7 +15,7 @@ export class SimpleVO extends VO<typeof SimpleVOSchema> {
     super(props);
   }
 
-  public static create = (val: v.InferInput<typeof SimpleVOSchema>) => {
+  public static create = (val: unknown) => {
     return voFactory(val, SimpleVOSchema, (props) => new SimpleVO(props));
   };
 }

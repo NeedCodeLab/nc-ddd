@@ -2,7 +2,7 @@ import * as v from "valibot";
 import { VO } from "@/core/vo";
 import { voFactory } from "@/helpers/vo-factory";
 
-const EmployeeInfoVOSchema = v.pipe(
+export const EmployeeInfoVOSchema = v.pipe(
   v.string("Info must be a string"),
   v.trim(),
   v.nonEmpty("Info can`t be empty"),

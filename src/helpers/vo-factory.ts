@@ -3,7 +3,7 @@ import * as v from "valibot";
 import type { VO } from "@/core/vo";
 
 export function voFactory<S extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>(
-  value: v.InferInput<typeof schema>,
+  value: unknown,
   schema: S,
   constructorFn: (props: v.InferOutput<S>) => VO<S>,
 ) {

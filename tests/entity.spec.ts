@@ -1,124 +1,123 @@
 import { randomUUID } from "node:crypto";
-import { EmployeeEntity } from "../example/entities/employee.entity";
+import { merge } from "@sweet-monads/either";
+import { Employee } from "../example/entities/employee.entity";
 import { RoleEnum } from "../example/value-objects/employee/employee-role.vo";
 
-describe("Entity class tests", () => {
-  it("should return errors for invalid DTO", () => {
-    const eitherEntity = EmployeeEntity.create({
-      id: randomUUID(),
-      name: "Alex",
-      info: "", // Invalid info
-      contacts: [
-        { type: "email", value: "mailemail.com" }, // Invalid email
-        { type: "email", value: "maile@mail.com" }, // Valid email
-        { type: "email", value: "mailemail.com" }, // Invalid email
-      ],
-      role: RoleEnum.admin,
-    });
+describe("Entity implementation tests", () => {
+  const employeeId1 = randomUUID();
+  const employeeId2 = randomUUID();
 
-    eitherEntity.fold(
-      (errors) => {
-        expect(errors).toEqual({
-          info: ["Info can`t be empty"],
-          contacts: {
-            "0": {
-              value: ["Invalid email"],
-            },
-            "2": {
-              value: ["Invalid email"],
-            },
-          },
+  const validEmployeeProps = {
+    id: employeeId1,
+    name: "John Doe",
+    role: RoleEnum.staff,
+    info: "A valuable team member.",
+    contacts: [{ type: "email" as const, value: "john.doe@example.com" }],
+  };
+  const invalidEmployeeProps = {
+    id: employeeId1,
+    name: "",
+    role: RoleEnum.staff,
+    info: 1,
+    contacts: [{ type: "email" as const, value: "john.doeexample.com" }],
+  };
+  it("should throw error an entity with invalid properties", () => {
+    const employeeEither = Employee.create(invalidEmployeeProps);
+
+    employeeEither.fold(
+      (error) => {
+        expect(error).toEqual({
+          name: ["Name can`t be empty"],
+          info: ["Info must be a string"],
+          "contacts.0.value": ["Invalid email"],
         });
       },
       () => {
-        fail("Expected a Left, but received a Right");
+        throw new Error("Expected a Right, but received a Left");
       },
     );
   });
+  it("should create an entity with valid properties", () => {
+    const employeeEither = Employee.create(validEmployeeProps);
 
-  it("should create a valid EmployeeEntity", () => {
-    const eitherEntity = EmployeeEntity.create({
-      id: randomUUID(),
-      name: "Alex",
-      info: "Some info",
-      contacts: [
-        { type: "email", value: "maile@mail.com" },
-        { type: "phone", value: "79222222222" },
-      ],
-      role: RoleEnum.staff,
-    });
-
-    eitherEntity.fold(
-      (errors) => {
-        fail(`Expected a Right, but received a Left with errors: ${JSON.stringify(errors)}`);
+    employeeEither.fold(
+      (error) => {
+        console.error(error);
+        fail("Expected a Right, but received a Left");
       },
       (employee) => {
-        expect(employee).toBeInstanceOf(EmployeeEntity);
-        expect(employee.primitive.name).toBe("Alex");
-        expect(employee.primitive.info).toBe("Some info");
-        expect(employee.primitive.contacts).toEqual([
-          { type: "email", value: "maile@mail.com" },
-          { type: "phone", value: "79222222222" },
-        ]);
-        expect(employee.primitive.role).toBe(RoleEnum.staff);
+        expect(employee).toBeInstanceOf(Employee);
+        expect(employee.id.value).toBe(employeeId1);
+        expect(employee.props.name.value).toBe("John Doe");
       },
     );
   });
-  it("should update EmployeeEntity", () => {
-    const eitherEntity = EmployeeEntity.create({
-      id: randomUUID(),
-      name: "Alex",
-      info: "Some info",
-      contacts: [
-        { type: "email", value: "maile@mail.com" },
-        { type: "phone", value: "79222222222" },
-      ],
-      role: RoleEnum.staff,
-    });
-    eitherEntity.mapLeft(() => {
-      throw new Error("Expected a Right, but received a Left");
-    });
-    eitherEntity
-      .chain((employee) => {
-        return employee.update({ name: "Bob" });
-      })
-      .fold(
-        () => {
-          throw new Error("Expected a Right, but received a Left");
-        },
-        (updated) => {
-          expect(updated).toBeInstanceOf(EmployeeEntity);
-          expect(updated.primitive.name).toBe("Bob");
-        },
-      );
+
+  it("should fail to create an entity with invalid id", () => {
+    const invalidEmployeeProps = {
+      ...validEmployeeProps,
+      id: "not-a-uuid",
+    };
+
+    const employeeEither = Employee.create(invalidEmployeeProps);
+
+    employeeEither.fold(
+      (errors) => {
+        expect(errors).toEqual({
+          id: ["Invalid Id"],
+        });
+      },
+      () => fail("Expected a Left, but received a Right"),
+    );
   });
-  it("should not update EmployeeEntity", () => {
-    const eitherEntity = EmployeeEntity.create({
-      id: randomUUID(),
-      name: "Alex",
-      info: "Some info",
-      contacts: [
-        { type: "email", value: "maile@mail.com" },
-        { type: "phone", value: "79222222222" },
-      ],
-      role: RoleEnum.staff,
+
+  it("should fail to create an entity with invalid contact", () => {
+    const invalidEmployeeProps = {
+      ...validEmployeeProps,
+      contacts: [{ type: "email" as const, value: "invalid-email" }],
+    };
+
+    const employeeEither = Employee.create(invalidEmployeeProps);
+
+    employeeEither.fold(
+      (errors) => {
+        expect(errors).toEqual({
+          "contacts.0.value": ["Invalid email"],
+        });
+      },
+      () => fail("Expected a Left, but received a Right"),
+    );
+  });
+
+  it("should consider two entities with the same ID as equal", () => {
+    const employee1Either = Employee.create(validEmployeeProps);
+    const employee2Either = Employee.create({
+      ...validEmployeeProps,
+      name: "Jane Doe",
     });
-    eitherEntity.mapLeft(() => {
-      throw new Error("Expected a Right, but received a Left");
+    merge([employee1Either, employee2Either]).fold(
+      () => {
+        throw new Error("Entity creation failed");
+      },
+      ([e1, e2]) => {
+        expect(e1.isEqual(e2)).toBe(true);
+      },
+    );
+  });
+
+  it("should not consider two entities with different IDs as equal", () => {
+    const employee1Either = Employee.create(validEmployeeProps);
+    const employee2Either = Employee.create({
+      ...validEmployeeProps,
+      id: employeeId2,
     });
-    eitherEntity
-      .chain((employee) => {
-        return employee.update({ name: "" });
-      })
-      .fold(
-        (e) => {
-          expect(e).toEqual({
-            name: ["Name can`t be empty"],
-          });
-        },
-        () => {
-          throw new Error("Expected a Left, but received a Right");
-        },
-      );
+    merge([employee1Either, employee2Either]).fold(
+      () => {
+        throw new Error("Entity creation failed");
+      },
+      ([e1, e2]) => {
+        expect(e1.isEqual(e2)).toBe(false);
+      },
+    );
   });
 });

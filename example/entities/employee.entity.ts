@@ -1,31 +1,43 @@
-import { Entity, type InferEntityProps } from "@/core/entity";
-import { entityFactory, type InferPropsFromClasses } from "@/helpers/entity-factory";
-
+import { left, merge } from "@sweet-monads/either";
+import { flatten, safeParse } from "valibot";
+import { Entity } from "@/core/entity";
+import { CreateEmployeeDTOSchema } from "../dtos/create-employee.dto";
 import { EmployeeContactVO } from "../value-objects/employee/employee-contact.vo";
 import { EmployeeInfoVO } from "../value-objects/employee/employee-info.vo";
 import { EmployeeNameVO } from "../value-objects/employee/employee-name.vo";
 import { EmployeeRoleVO } from "../value-objects/employee/employee-role.vo";
 import { IdVO } from "../value-objects/employee/id.vo";
 
-const EntitySchema = {
-  id: IdVO,
-  name: EmployeeNameVO,
-  info: EmployeeInfoVO,
-  contacts: [EmployeeContactVO],
-  role: EmployeeRoleVO,
-} as const;
+export interface EmployeeProps {
+  id: IdVO;
+  name: EmployeeNameVO;
+  role: EmployeeRoleVO;
+  info: EmployeeInfoVO;
+  contacts: EmployeeContactVO[];
+}
 
-type EmployeeEntityProps = InferPropsFromClasses<typeof EntitySchema>;
-type EmployeeDTO = InferEntityProps<EmployeeEntityProps>;
-
-export class EmployeeEntity extends Entity<EmployeeEntityProps> {
-  static create(dto: EmployeeDTO) {
-    return entityFactory(dto, EntitySchema, (props) => new EmployeeEntity(props));
+export class Employee extends Entity<EmployeeProps> {
+  private constructor(props: EmployeeProps) {
+    super(props);
   }
 
-  update(dto: Partial<Omit<EmployeeDTO, "id">>) {
-    const instance = this.primitive;
-    const dataForUpdate = { ...instance, ...dto };
-    return entityFactory(dataForUpdate, EntitySchema, (props) => new EmployeeEntity(props));
+  public static create(rawDTO: unknown) {
+    const dtoResult = safeParse(CreateEmployeeDTOSchema, rawDTO);
+
+    if (!dtoResult.success) {
+      return left(flatten(dtoResult.issues).nested);
+    }
+
+    const props = dtoResult.output;
+
+    const id = IdVO.create(props.id);
+    const name = EmployeeNameVO.create(props.name);
+    const role = EmployeeRoleVO.create(props.role);
+    const info = EmployeeInfoVO.create(props.info);
+    const contacts = merge(props.contacts.map((c) => EmployeeContactVO.create(c)));
+
+    return merge([id, name, role, info, contacts]).map(([id, name, role, info, contacts]) => {
+      return new Employee({ id, name, role, info, contacts });
+    });
   }
 }
