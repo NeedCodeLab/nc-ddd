@@ -5,7 +5,7 @@ type AllowedEntityPropValue =
   | VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>
   | Array<VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>>;
 
-type IEntityProps = {
+export type IEntityProps = {
   id: VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>;
 };
 
