@@ -6,7 +6,7 @@ import { EmployeeContactVO } from "../value-objects/employee/employee-contact.vo
 import { EmployeeInfoVO } from "../value-objects/employee/employee-info.vo";
 import { EmployeeNameVO } from "../value-objects/employee/employee-name.vo";
 import { EmployeeRoleVO } from "../value-objects/employee/employee-role.vo";
-import { IdVO } from "../value-objects/employee/id.vo";
+import { IdVO } from "../value-objects/id.vo";
 
 export interface EmployeeProps {
   id: IdVO;

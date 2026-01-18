@@ -3,7 +3,7 @@ import { EmployeeContactVOSchema } from "../value-objects/employee/employee-cont
 import { EmployeeInfoVOSchema } from "../value-objects/employee/employee-info.vo";
 import { EmployeeNameVOSchema } from "../value-objects/employee/employee-name.vo";
 import { RoleVOSchema } from "../value-objects/employee/employee-role.vo";
-import { IdVOSchema } from "../value-objects/employee/id.vo";
+import { IdVOSchema } from "../value-objects/id.vo";
 
 export const CreateEmployeeDTOSchema = v.object({
   id: IdVOSchema,
