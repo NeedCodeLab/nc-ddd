@@ -46,9 +46,14 @@ describe("Entity implementation tests", () => {
         fail("Expected a Right, but received a Left");
       },
       (employee) => {
-        expect(employee).toBeInstanceOf(Employee);
-        expect(employee.id.value).toBe(employeeId1);
-        expect(employee.props.name.value).toBe("John Doe");
+        expect(employee.primitive).toEqual({
+          id: employeeId1,
+          name: "John Doe",
+          role: "staff",
+          info: "A valuable team member.",
+          contacts: [{ type: "email", value: "john.doe@example.com" }],
+          lastName: null,
+        });
       },
     );
   });

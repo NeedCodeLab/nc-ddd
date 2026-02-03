@@ -1,9 +1,10 @@
-import { left, merge } from "@sweet-monads/either";
+import { left, merge, right } from "@sweet-monads/either";
 import { flatten, safeParse } from "valibot";
 import { Entity } from "@/core/entity";
 import { CreateEmployeeDTOSchema } from "../dtos/create-employee.dto";
 import { EmployeeContactVO } from "../value-objects/employee/employee-contact.vo";
 import { EmployeeInfoVO } from "../value-objects/employee/employee-info.vo";
+import { EmployeeLastNameVO } from "../value-objects/employee/employee-last-name.vo";
 import { EmployeeNameVO } from "../value-objects/employee/employee-name.vo";
 import { EmployeeRoleVO } from "../value-objects/employee/employee-role.vo";
 import { IdVO } from "../value-objects/id.vo";
@@ -11,6 +12,7 @@ import { IdVO } from "../value-objects/id.vo";
 export interface EmployeeProps {
   id: IdVO;
   name: EmployeeNameVO;
+  lastName: EmployeeLastNameVO | null;
   role: EmployeeRoleVO;
   info: EmployeeInfoVO;
   contacts: EmployeeContactVO[];
@@ -32,12 +34,15 @@ export class Employee extends Entity<EmployeeProps> {
 
     const id = IdVO.create(props.id);
     const name = EmployeeNameVO.create(props.name);
+    const lastName = props.lastName ? EmployeeLastNameVO.create(props.lastName) : right(null);
     const role = EmployeeRoleVO.create(props.role);
     const info = EmployeeInfoVO.create(props.info);
     const contacts = merge(props.contacts.map((c) => EmployeeContactVO.create(c)));
 
-    return merge([id, name, role, info, contacts]).map(([id, name, role, info, contacts]) => {
-      return new Employee({ id, name, role, info, contacts });
-    });
+    return merge([id, name, role, info, contacts, lastName]).map(
+      ([id, name, role, info, contacts, lastName]) => {
+        return new Employee({ id, name, role, info, contacts, lastName });
+      },
+    );
   }
 }

@@ -3,7 +3,8 @@ import type { VO } from "./vo";
 
 type AllowedEntityPropValue =
   | VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>
-  | Array<VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>>;
+  | Array<VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>>
+  | null;
 
 export type IEntityProps = {
   id: VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>;
@@ -49,6 +50,9 @@ export abstract class Entity<
   get primitive(): InferEntityProps<Props> {
     return Object.fromEntries(
       Object.entries(this.props).map(([k, v]) => {
+        if (v === null) {
+          return [k, v];
+        }
         if (Array.isArray(v)) {
           return [k, v.map((i) => i.value)];
         }

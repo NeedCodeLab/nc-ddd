@@ -11,6 +11,7 @@ describe("Company Aggregate", () => {
   const validEmployee = {
     id: employeeId1,
     name: "John Doe",
+    lastName: null,
     role: RoleEnum.staff,
     info: "A valuable team member.",
     contacts: [{ type: "email" as const, value: "john.doe@example.com" }],
@@ -118,6 +119,7 @@ describe("Company Aggregate", () => {
             {
               id: employeeId1,
               name: "John Doe",
+              lastName: null,
               role: "staff",
               info: "A valuable team member.",
               contacts: [{ type: "email", value: "john.doe@example.com" }],
