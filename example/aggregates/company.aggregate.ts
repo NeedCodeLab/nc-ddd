@@ -27,8 +27,8 @@ export class Company extends AgregateRoot<CompanyProps> {
 
     const props = dtoResult.output;
 
-    const id = IdVO.create(props.id);
-    const companyName = CompanyNameVO.create(props.companyName);
+    const id = IdVO.create(props.id, "id");
+    const companyName = CompanyNameVO.create(props.companyName, "name");
     const employees = merge(props.employees.map((e) => Employee.create(e)));
 
     return merge([id, companyName, employees]).map(([id, companyName, employees]) => {

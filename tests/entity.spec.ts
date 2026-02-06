@@ -29,7 +29,7 @@ describe("Entity implementation tests", () => {
         expect(error).toEqual({
           name: ["Name can`t be empty"],
           info: ["Info must be a string"],
-          "contacts.0.value": ["Invalid email"],
+          "contacts.0": { value: ["Invalid email"] },
         });
       },
       () => {
@@ -87,7 +87,7 @@ describe("Entity implementation tests", () => {
     employeeEither.fold(
       (errors) => {
         expect(errors).toEqual({
-          "contacts.0.value": ["Invalid email"],
+          "contacts.0": { value: ["Invalid email"] },
         });
       },
       () => fail("Expected a Left, but received a Right"),

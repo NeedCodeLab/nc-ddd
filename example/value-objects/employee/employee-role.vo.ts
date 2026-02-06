@@ -13,7 +13,7 @@ export class EmployeeRoleVO extends VO<typeof RoleVOSchema> {
   private constructor(props: LeagueRoleVOProps) {
     super(props);
   }
-  public static create = (val: v.InferInput<typeof RoleVOSchema>) => {
-    return voFactory(val, RoleVOSchema, (props) => new EmployeeRoleVO(props));
+  public static create = (val: v.InferInput<typeof RoleVOSchema>, key: string) => {
+    return voFactory(val, RoleVOSchema, (props) => new EmployeeRoleVO(props), key);
   };
 }

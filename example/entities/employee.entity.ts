@@ -1,7 +1,6 @@
-import { left, merge, right } from "@sweet-monads/either";
-import { flatten, safeParse } from "valibot";
+import { merge, mergeInMany, right } from "@sweet-monads/either";
 import { Entity } from "@/core/entity";
-import { CreateEmployeeDTOSchema } from "../dtos/create-employee.dto";
+import type { CreateEmployeeDTO } from "../dtos/create-employee.dto";
 import { EmployeeContactVO } from "../value-objects/employee/employee-contact.vo";
 import { EmployeeInfoVO } from "../value-objects/employee/employee-info.vo";
 import { EmployeeLastNameVO } from "../value-objects/employee/employee-last-name.vo";
@@ -24,25 +23,32 @@ export class Employee extends Entity<EmployeeProps> {
   }
 
   public static create(rawDTO: unknown) {
-    const dtoResult = safeParse(CreateEmployeeDTOSchema, rawDTO);
+    const props = rawDTO as CreateEmployeeDTO;
 
-    if (!dtoResult.success) {
-      return left(flatten(dtoResult.issues).nested);
-    }
-
-    const props = dtoResult.output;
-
-    const id = IdVO.create(props.id);
-    const name = EmployeeNameVO.create(props.name);
-    const lastName = props.lastName ? EmployeeLastNameVO.create(props.lastName) : right(null);
-    const role = EmployeeRoleVO.create(props.role);
-    const info = EmployeeInfoVO.create(props.info);
-    const contacts = merge(props.contacts.map((c) => EmployeeContactVO.create(c)));
-
-    return merge([id, name, role, info, contacts, lastName]).map(
-      ([id, name, role, info, contacts, lastName]) => {
-        return new Employee({ id, name, role, info, contacts, lastName });
-      },
+    const id = IdVO.create(props.id, "id");
+    const name = EmployeeNameVO.create(props.name, "name");
+    const lastName = props.lastName
+      ? EmployeeLastNameVO.create(props.lastName, "lastName")
+      : right(null);
+    const role = EmployeeRoleVO.create(props.role, "role");
+    const info = EmployeeInfoVO.create(props.info, "info");
+    const contacts = merge(
+      props.contacts.map((c, idx) => EmployeeContactVO.create(c, `contacts.${idx}`)),
     );
+
+    return mergeInMany([id, name, role, info, contacts, lastName])
+      .map(([id, name, role, info, contacts, lastName]) => {
+        return new Employee({
+          id,
+          name,
+          role,
+          info,
+          contacts,
+          lastName,
+        });
+      })
+      .mapLeft((errors) => {
+        return Object.assign({}, ...errors);
+      });
   }
 }

@@ -6,11 +6,19 @@ export function voFactory<S extends v.BaseSchema<unknown, unknown, v.BaseIssue<u
   value: unknown,
   schema: S,
   constructorFn: (props: v.InferOutput<S>) => VO<S>,
+  key?: string,
 ) {
   const parseResult = v.safeParse(schema, value);
   if (!parseResult.success) {
     const flattedErrors = v.flatten<typeof schema>(parseResult.issues);
-    return left(flattedErrors.root || flattedErrors.nested || flattedErrors.other);
+    const errorsRes = flattedErrors.root || flattedErrors.nested || flattedErrors.other;
+    return left(
+      key
+        ? {
+            [key]: errorsRes,
+          }
+        : errorsRes,
+    );
   }
   return right(constructorFn(parseResult.output));
 }

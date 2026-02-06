@@ -14,7 +14,7 @@ export class EmployeeLastNameVO extends VO<typeof EmployeeLastNameVOSchema> {
   private constructor(props: EmployeeLastNameVOProps) {
     super(props);
   }
-  public static create = (val: v.InferInput<typeof EmployeeLastNameVOSchema>) => {
-    return voFactory(val, EmployeeLastNameVOSchema, (props) => new EmployeeLastNameVO(props));
+  public static create = (val: v.InferInput<typeof EmployeeLastNameVOSchema>, key: string) => {
+    return voFactory(val, EmployeeLastNameVOSchema, (props) => new EmployeeLastNameVO(props), key);
   };
 }

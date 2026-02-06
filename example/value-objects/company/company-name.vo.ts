@@ -14,7 +14,7 @@ export class CompanyNameVO extends VO<typeof CompanyNameVOSchema> {
   private constructor(props: CompanyNameVOProps) {
     super(props);
   }
-  public static create = (val: v.InferInput<typeof CompanyNameVOSchema>) => {
-    return voFactory(val, CompanyNameVOSchema, (props) => new CompanyNameVO(props));
+  public static create = (val: v.InferInput<typeof CompanyNameVOSchema>, key: string) => {
+    return voFactory(val, CompanyNameVOSchema, (props) => new CompanyNameVO(props), key);
   };
 }

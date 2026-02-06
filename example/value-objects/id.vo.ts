@@ -15,7 +15,7 @@ export class IdVO extends VO<typeof IdVOSchema> {
   private constructor(props: EmployeeIdVOProps) {
     super(props);
   }
-  public static create = (val: v.InferInput<typeof IdVOSchema>) => {
-    return voFactory(val, IdVOSchema, (props) => new IdVO(props));
+  public static create = (val: v.InferInput<typeof IdVOSchema>, key: string) => {
+    return voFactory(val, IdVOSchema, (props) => new IdVO(props), key);
   };
 }

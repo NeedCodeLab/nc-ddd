@@ -24,7 +24,7 @@ export class MultipleVO extends VO<typeof MultipleVOSchema> {
     super(props);
   }
 
-  public static create = (val: unknown) => {
-    return voFactory(val, MultipleVOSchema, (props) => new MultipleVO(props));
+  public static create = (val: unknown, key?: string) => {
+    return voFactory(val, MultipleVOSchema, (props) => new MultipleVO(props), key);
   };
 }

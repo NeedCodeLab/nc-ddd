@@ -15,7 +15,7 @@ export class SimpleVO extends VO<typeof SimpleVOSchema> {
     super(props);
   }
 
-  public static create = (val: unknown) => {
-    return voFactory(val, SimpleVOSchema, (props) => new SimpleVO(props));
+  public static create = (val: unknown, key?: string) => {
+    return voFactory(val, SimpleVOSchema, (props) => new SimpleVO(props), key);
   };
 }

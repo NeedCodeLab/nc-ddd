@@ -4,7 +4,7 @@ import { SimpleVO } from "../example/value-objects/simple.vo";
 
 describe("Simple vo tests", () => {
   it("single field right case", () => {
-    const eitherVO = SimpleVO.create("some_value");
+    const eitherVO = SimpleVO.create("some_value", "value");
     eitherVO.fold(
       () => fail("Expected a Right, but received a Left"),
       (vo) => {
@@ -45,7 +45,7 @@ describe("Simple vo tests", () => {
 
 describe("Multiple vo tests", () => {
   it("multiple fields right case", () => {
-    const eitherVO = MultipleVO.create({ type: "email", value: "mail@mail.com" });
+    const eitherVO = MultipleVO.create({ type: "email", value: "mail@mail.com" }, "value");
     eitherVO.fold(
       () => fail("Expected a Right, but received a Left"),
       (vo) => {
@@ -69,7 +69,7 @@ describe("Multiple vo tests", () => {
   });
 
   it("should create MultipleVO with valid email", () => {
-    const eitherVO = MultipleVO.create({ type: "email", value: "test@example.com" });
+    const eitherVO = MultipleVO.create({ type: "email", value: "test@example.com" }, "value");
     eitherVO.fold(
       () => fail("Expected a Right, but received a Left"),
       (vo) => {
@@ -81,8 +81,8 @@ describe("Multiple vo tests", () => {
   });
 
   it("should be equal", () => {
-    const eitherVO1 = MultipleVO.create({ type: "email", value: "test@example.com" });
-    const eitherVO2 = MultipleVO.create({ type: "email", value: "test@example.com" });
+    const eitherVO1 = MultipleVO.create({ type: "email", value: "test@example.com" }, "value");
+    const eitherVO2 = MultipleVO.create({ type: "email", value: "test@example.com" }, "value");
     merge([eitherVO1, eitherVO2]).fold(
       () => fail("Expected a Right, but received a Left"),
       ([vo1, vo2]) => {
@@ -91,8 +91,8 @@ describe("Multiple vo tests", () => {
     );
   });
   it("should not be equal", () => {
-    const eitherVO1 = MultipleVO.create({ type: "email", value: "test2@example.com" });
-    const eitherVO2 = MultipleVO.create({ type: "email", value: "test@example.com" });
+    const eitherVO1 = MultipleVO.create({ type: "email", value: "test2@example.com" }, "value");
+    const eitherVO2 = MultipleVO.create({ type: "email", value: "test@example.com" }, "value");
     merge([eitherVO1, eitherVO2]).fold(
       () => fail("Expected a Right, but received a Left"),
       ([vo1, vo2]) => {
