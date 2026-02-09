@@ -1,6 +1,6 @@
 {
   "name": "@need-code/nc-ddd",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A set of base classes for implementing Domain-Driven Design patterns.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
