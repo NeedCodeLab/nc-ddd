@@ -3,14 +3,12 @@
   "version": "0.2.0",
   "description": "A set of base classes for implementing Domain-Driven Design patterns.",
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
