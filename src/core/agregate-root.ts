@@ -1,6 +1,6 @@
 import type * as v from "valibot";
-import { Entity, type IEntityProps, type InferEntityProps } from "./entity";
-import { VO } from "./vo";
+import { Entity, type IEntityProps, type InferEntityProps } from "./entity.js";
+import { VO } from "./vo.js";
 
 type AllowedAgregateRootPropValue =
   | VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>
@@ -8,13 +8,14 @@ type AllowedAgregateRootPropValue =
   | Entity<IEntityProps>
   | Array<Entity<IEntityProps>>;
 
-export type InferPropType<T> = T extends ReadonlyArray<infer U>
-  ? InferPropType<U>[]
-  : T extends VO<infer S>
-    ? v.InferInput<S>
-    : T extends Entity<infer P>
-      ? InferEntityProps<P>
-      : never;
+export type InferPropType<T> =
+  T extends ReadonlyArray<infer U>
+    ? InferPropType<U>[]
+    : T extends VO<infer S>
+      ? v.InferInput<S>
+      : T extends Entity<infer P>
+        ? InferEntityProps<P>
+        : never;
 
 export type InferAgregateRootProps<T> = {
   [K in keyof T]: InferPropType<T[K]>;

@@ -1,5 +1,5 @@
 import type * as v from "valibot";
-import type { VO } from "./vo";
+import type { VO } from "./vo.js";
 
 type AllowedEntityPropValue =
   | VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>
