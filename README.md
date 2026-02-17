@@ -112,7 +112,7 @@ export class Employee extends Entity<EmployeeProps> {
 
 An Aggregate Root is a specific type of Entity that acts as a gateway to a cluster of associated objects.
 
-The `AgregateRoot` base class extends the `Entity` class and allows for more complex properties, including other Entities.
+The `AggregateRoot` base class extends the `Entity` class and allows for more complex properties, including other Entities.
 
 **Example: `Company` Aggregate Root**
 ```typescript
@@ -120,7 +120,7 @@ The `AgregateRoot` base class extends the `Entity` class and allows for more com
 import { left, merge } from "@sweet-monads/either";
 import { flatten, safeParse } from "valibot";
 
-import { AgregateRoot } from "@/core/agregate-root";
+import { AggregateRoot } from "@/core/aggregate-root";
 import { CreateCompanyDTOSchema } from "../dtos/create-company.dto";
 import { Employee } from "../entities/employee.entity";
 import { CompanyNameVO } from "../value-objects/company/company-name.vo";
@@ -132,7 +132,7 @@ export interface CompanyProps {
   employees: Employee[];
 }
 
-export class Company extends AgregateRoot<CompanyProps> {
+export class Company extends AggregateRoot<CompanyProps> {
   private constructor(props: CompanyProps) {
     super(props);
   }

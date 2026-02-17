@@ -1,8 +1,7 @@
-import { left, merge } from "@sweet-monads/either";
-import { flatten, safeParse } from "valibot";
+import { left, merge, mergeInMany, right } from "@sweet-monads/either";
 
-import { AgregateRoot } from "@/core/agregate-root";
-import { CreateCompanyDTOSchema } from "../dtos/create-company.dto";
+import { AggregateRoot } from "@/core/aggregate-root";
+import type { CreateCompanyDTO } from "../dtos/create-company.dto";
 import { Employee } from "../entities/employee.entity";
 import { CompanyNameVO } from "../value-objects/company/company-name.vo";
 import { IdVO } from "../value-objects/id.vo";
@@ -13,26 +12,29 @@ export interface CompanyProps {
   employees: Employee[];
 }
 
-export class Company extends AgregateRoot<CompanyProps> {
+export class Company extends AggregateRoot<CompanyProps> {
   private constructor(props: CompanyProps) {
     super(props);
   }
 
   public static create(rawDTO: unknown) {
-    const dtoResult = safeParse(CreateCompanyDTOSchema, rawDTO);
-
-    if (!dtoResult.success) {
-      return left(flatten(dtoResult.issues).nested);
-    }
-
-    const props = dtoResult.output;
+    const props = rawDTO as CreateCompanyDTO;
 
     const id = IdVO.create(props.id, "id");
-    const companyName = CompanyNameVO.create(props.companyName, "name");
-    const employees = merge(props.employees.map((e) => Employee.create(e)));
+    const companyName = CompanyNameVO.create(props.companyName, "companyName");
+    const employees = merge(
+      props.employees.map((em, idx) => Employee.create(em, `employees.${idx}`)),
+    );
 
-    return merge([id, companyName, employees]).map(([id, companyName, employees]) => {
-      return new Company({ id, companyName, employees });
-    });
+    return mergeInMany([id, companyName, employees]).fold(
+      (e) => {
+        const errors = Object.assign({}, ...e);
+        return left(errors);
+      },
+      ([id, companyName, employees]) => {
+        const league = new Company({ id, companyName, employees });
+        return right(league);
+      },
+    );
   }
 }

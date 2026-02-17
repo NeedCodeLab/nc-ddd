@@ -1,4 +1,4 @@
-import { merge, mergeInMany, right } from "@sweet-monads/either";
+import { left, merge, mergeInMany, right } from "@sweet-monads/either";
 import { Entity } from "@/core/entity";
 import type { CreateEmployeeDTO } from "../dtos/create-employee.dto";
 import { EmployeeContactVO } from "../value-objects/employee/employee-contact.vo";
@@ -22,7 +22,7 @@ export class Employee extends Entity<EmployeeProps> {
     super(props);
   }
 
-  public static create(rawDTO: unknown) {
+  public static create(rawDTO: unknown, key?: string) {
     const props = rawDTO as CreateEmployeeDTO;
 
     const id = IdVO.create(props.id, "id");
@@ -36,19 +36,15 @@ export class Employee extends Entity<EmployeeProps> {
       props.contacts.map((c, idx) => EmployeeContactVO.create(c, `contacts.${idx}`)),
     );
 
-    return mergeInMany([id, name, role, info, contacts, lastName])
-      .map(([id, name, role, info, contacts, lastName]) => {
-        return new Employee({
-          id,
-          name,
-          role,
-          info,
-          contacts,
-          lastName,
-        });
-      })
-      .mapLeft((errors) => {
-        return Object.assign({}, ...errors);
-      });
+    return mergeInMany([id, name, role, info, contacts, lastName]).fold(
+      (e) => {
+        const errors = Object.assign({}, ...e);
+        return left(key ? { [key]: errors } : errors);
+      },
+      ([id, name, role, info, contacts, lastName]) => {
+        const empl = new Employee({ id, name, role, info, contacts, lastName });
+        return right(empl);
+      },
+    );
   }
 }

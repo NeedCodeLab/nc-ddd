@@ -2,7 +2,7 @@ import type * as v from "valibot";
 import { Entity, type IEntityProps, type InferEntityProps } from "./entity.js";
 import { VO } from "./vo.js";
 
-type AllowedAgregateRootPropValue =
+type AllowedAggregateRootPropValue =
   | VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>
   | Array<VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>>
   | Entity<IEntityProps>
@@ -17,17 +17,17 @@ export type InferPropType<T> =
         ? InferEntityProps<P>
         : never;
 
-export type InferAgregateRootProps<T> = {
+export type InferAggregateRootProps<T> = {
   [K in keyof T]: InferPropType<T[K]>;
 };
 
 /**
- * @class AgregateRoot
+ * @class AggregateRoot
  * @description Base class for aggregate roots in DDD. An aggregate root is a specific type of entity that acts as a gateway to a cluster of associated objects.
  * @template Props - The properties of the aggregate root. Must include an 'id' property which is a Value Object.
  */
-export abstract class AgregateRoot<
-  Props extends IEntityProps & Record<keyof Props, AllowedAgregateRootPropValue>,
+export abstract class AggregateRoot<
+  Props extends IEntityProps & Record<keyof Props, AllowedAggregateRootPropValue>,
 > {
   public readonly props: Props;
 
@@ -47,7 +47,7 @@ export abstract class AgregateRoot<
     return this.props.id as Props["id"];
   }
 
-  get primitive(): InferAgregateRootProps<Props> {
+  get primitive(): InferAggregateRootProps<Props> {
     const toPrim = (p: unknown) => {
       if (p instanceof Entity) {
         return p.primitive;
@@ -65,7 +65,7 @@ export abstract class AgregateRoot<
         }
         return [key, toPrim(prop)];
       }),
-    ) as InferAgregateRootProps<Props>;
+    ) as InferAggregateRootProps<Props>;
   }
 
   /**
@@ -74,7 +74,7 @@ export abstract class AgregateRoot<
    * @param other The other aggregate root to compare with.
    * @returns {boolean} `true` if they are equal, `false` otherwise.
    */
-  public isEqual(other?: AgregateRoot<Props>): boolean {
+  public isEqual(other?: AggregateRoot<Props>): boolean {
     if (other === null || other === undefined) {
       return false;
     }
@@ -83,7 +83,7 @@ export abstract class AgregateRoot<
       return true;
     }
 
-    if (!(other instanceof AgregateRoot)) {
+    if (!(other instanceof AggregateRoot)) {
       return false;
     }
 

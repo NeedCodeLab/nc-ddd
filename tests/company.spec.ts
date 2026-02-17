@@ -79,7 +79,60 @@ describe("Company Aggregate", () => {
     companyEither.fold(
       (errors) => {
         expect(errors).toEqual({
-          "employees.0.name": ["Name can`t be empty"],
+          "employees.0": { name: ["Name can`t be empty"] },
+        });
+      },
+      () => fail("Should have failed, but created a company."),
+    );
+  });
+
+  it("should fail with multiple invalid employees, returning the first error", () => {
+    const invalidEmployee2 = {
+      ...validEmployee,
+      id: randomUUID(),
+      name: "", // invalid name
+    };
+
+    const invalidEmployee3 = {
+      ...validEmployee,
+      id: randomUUID(),
+      role: "invalid-role" as any, // invalid role
+    };
+
+    const invalidCompanyDTO = {
+      ...validCompanyDTO,
+      employees: [validEmployee, invalidEmployee2, invalidEmployee3],
+    };
+
+    const companyEither = Company.create(invalidCompanyDTO);
+
+    companyEither.fold(
+      (errors) => {
+        expect(errors).toEqual({
+          "employees.1": { name: ["Name can`t be empty"] },
+        });
+      },
+      () => fail("Should have failed, but created a company."),
+    );
+  });
+
+  it("should fail if an employee has an invalid contact", () => {
+    const invalidCompanyDTO = {
+      ...validCompanyDTO,
+      employees: [
+        {
+          ...validEmployee,
+          contacts: [{ type: "email" as const, value: "invalid-email" }],
+        },
+      ],
+    };
+
+    const companyEither = Company.create(invalidCompanyDTO);
+
+    companyEither.fold(
+      (errors) => {
+        expect(errors).toEqual({
+          "employees.0": { "contacts.0": { value: ["Invalid email"] } },
         });
       },
       () => fail("Should have failed, but created a company."),
