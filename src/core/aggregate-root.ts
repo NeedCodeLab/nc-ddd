@@ -6,7 +6,8 @@ type AllowedAggregateRootPropValue =
   | VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>
   | Array<VO<v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>>
   | Entity<IEntityProps>
-  | Array<Entity<IEntityProps>>;
+  | Array<Entity<IEntityProps>>
+  | null;
 
 export type InferPropType<T> =
   T extends ReadonlyArray<infer U>
