@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { Effect, Either, pipe } from "effect";
-import { extractErrors } from "@/helpers/extract-errors";
-import { mapOptional } from "@/helpers/map-optional";
+import { effectMapOptional } from "@/helpers/effect-map-optional";
+import { extractEffectErrors } from "@/helpers/extract-effect-errors";
+import { EmployeeEffect } from "../examples/effect/entities/employee.effect-entity";
 import {
   EmployeeContactVO,
   type EmployeeContactVOProps,
@@ -20,7 +21,7 @@ import { IdVO } from "../examples/effect/value-objects/id.vo";
 type EmployeeProps = {
   id: string;
   name: string;
-  lastName?: string | null;
+  lastName: string | null;
   role: RoleEnum;
   info: string; // намеренно допускаем невалидный тип для тестов
   contacts: EmployeeContactVOProps[];
@@ -34,7 +35,7 @@ function createEntity(props: EmployeeProps) {
       {
         id: IdVO.create(props.id),
         name: EmployeeNameVO.create(props.name),
-        lastName: mapOptional(props.lastName, (v) => EmployeeLastNameVO.create(v)),
+        lastName: effectMapOptional(props.lastName, (v) => EmployeeLastNameVO.create(v)),
         role: EmployeeRoleVO.create(props.role),
         info: EmployeeInfoVO.create(props.info as any),
         contacts: Effect.all(
@@ -44,7 +45,17 @@ function createEntity(props: EmployeeProps) {
       },
       { mode: "validate" }, // собираем ВСЕ ошибки, не останавливаемся на первой
     ),
-    Effect.mapError((cause) => extractErrors(cause)),
+    Effect.mapError((cause) => extractEffectErrors(cause)),
+    Effect.map((data) =>
+      EmployeeEffect.create({
+        id: data.id,
+        name: data.name,
+        info: data.info,
+        role: data.role,
+        contacts: data.contacts,
+        lastName: data.lastName ?? null,
+      }),
+    ),
     // Effect.tap((cause) => Effect.log(cause)),
     Effect.either, // оборачиваем в Either — runSync не бросит исключение
     Effect.runSync,
@@ -132,10 +143,12 @@ describe("Entity implementation tests", () => {
       const result = createEntity(validProps);
 
       if (Either.isRight(result)) {
-        expect(result.right).toMatchObject({
-          name: expect.anything(),
-          role: expect.anything(),
-          info: expect.anything(),
+        expect(result.right.primitive).toMatchObject({
+          name: "John",
+          lastName: null,
+          role: RoleEnum.staff,
+          info: "A valuable team member.",
+          contacts: [{ type: "email", value: "mail@email.ru" }],
         });
       }
     });

@@ -8,7 +8,10 @@ type MapOptionalResult<V, L, R> = undefined extends V
     ? Either<L, R | null>
     : Either<L, R>;
 
-export function mapOptional<V, L, R>(value: V, factory: (value: NonNullable<V>) => Either<L, R>) {
+export function effectMapOptional<V, L, R>(
+  value: V,
+  factory: (value: NonNullable<V>) => Either<L, R>,
+) {
   if (value === undefined) {
     return right(undefined);
   }

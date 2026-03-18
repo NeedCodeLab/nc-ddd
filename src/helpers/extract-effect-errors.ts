@@ -12,7 +12,7 @@ function isOptionArray(value: unknown): value is Option.Option<unknown>[] {
 
 // ─── Основная функция ────────────────────────────────────────────────────────
 
-export function extractErrors(input: Record<string, unknown>): Record<string, string[]> {
+export function extractEffectErrors(input: Record<string, unknown>): Record<string, string[]> {
   const result: Record<string, string[]> = {};
 
   for (const [key, raw] of Object.entries(input)) {
@@ -55,7 +55,7 @@ export function extractErrors(input: Record<string, unknown>): Record<string, st
 
     // Вложенный объект: рекурсия
     if (typeof value === "object") {
-      const nested = extractErrors(value as Record<string, unknown>);
+      const nested = extractEffectErrors(value as Record<string, unknown>);
       for (const [nestedKey, val] of Object.entries(nested)) {
         result[`${key}.${nestedKey}`] = val;
       }
