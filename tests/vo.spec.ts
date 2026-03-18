@@ -1,6 +1,6 @@
 import { merge } from "@sweet-monads/either";
-import { MultipleVO } from "../example/value-objects/multiple.vo";
-import { SimpleVO } from "../example/value-objects/simple.vo";
+import { MultipleVO } from "../examples/sweet-monads/value-objects/multiple.vo";
+import { SimpleVO } from "../examples/sweet-monads/value-objects/simple.vo";
 
 describe("Simple vo tests", () => {
   it("single field right case", () => {

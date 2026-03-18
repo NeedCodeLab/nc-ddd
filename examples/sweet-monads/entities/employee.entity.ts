@@ -1,6 +1,6 @@
 import { left, merge, mergeInMany, right } from "@sweet-monads/either";
 import { Entity } from "@/core/entity";
-import type { CreateEmployeeDTO } from "../dtos/create-employee.dto";
+import { CreateEmployeeDTO } from "../dtos/create-employee.dto";
 import { EmployeeContactVO } from "../value-objects/employee/employee-contact.vo";
 import { EmployeeInfoVO } from "../value-objects/employee/employee-info.vo";
 import { EmployeeLastNameVO } from "../value-objects/employee/employee-last-name.vo";

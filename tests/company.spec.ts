@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { merge } from "@sweet-monads/either";
-import { Company } from "../example/aggregates/company.aggregate";
-import { RoleEnum } from "../example/value-objects/employee/employee-role.vo";
+import { Company } from "../examples/sweet-monads/aggregates/company.aggregate";
+import { RoleEnum } from "../examples/sweet-monads/value-objects/employee/employee-role.vo";
 
 describe("Company Aggregate", () => {
   const companyId1 = randomUUID();

@@ -32,7 +32,7 @@
   "include": [
     "src",
     "tests",
-    "example"
+    "examples"
   ],
   "exclude": [
     "node_modules"

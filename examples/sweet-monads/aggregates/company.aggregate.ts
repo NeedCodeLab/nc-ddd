@@ -1,7 +1,7 @@
 import { left, merge, mergeInMany, right } from "@sweet-monads/either";
 
 import { AggregateRoot } from "@/core/aggregate-root";
-import type { CreateCompanyDTO } from "../dtos/create-company.dto";
+import { CreateCompanyDTO } from "../dtos/create-company.dto";
 import { Employee } from "../entities/employee.entity";
 import { CompanyNameVO } from "../value-objects/company/company-name.vo";
 import { IdVO } from "../value-objects/id.vo";

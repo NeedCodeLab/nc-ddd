@@ -38,6 +38,7 @@
   },
   "peerDependencies": {
     "@sweet-monads/either": ">=3.0.0",
+    "effect": "^3.20.0",
     "valibot": ">=1.0.0"
   }
 }

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { merge } from "@sweet-monads/either";
-import { Employee } from "../example/entities/employee.entity";
-import { RoleEnum } from "../example/value-objects/employee/employee-role.vo";
+import { Employee } from "../examples/sweet-monads/entities/employee.entity";
+import { RoleEnum } from "../examples/sweet-monads/value-objects/employee/employee-role.vo";
 
 describe("Entity implementation tests", () => {
   const employeeId1 = randomUUID();
