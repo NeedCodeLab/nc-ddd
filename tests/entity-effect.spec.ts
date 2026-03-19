@@ -66,7 +66,7 @@ function createEntity(props: EmployeeProps) {
 
 const invalidProps: EmployeeProps = {
   id: randomUUID(),
-  name: "", // невалидно: пустая строка
+  name: "asdasfdasfasdasdfasdfasdfgasdgasfdgas", // невалидно: пустая строка
   lastName: 123 as any,
   role: RoleEnum.staff,
   info: 1 as any, // невалидно: число вместо строки
@@ -123,7 +123,7 @@ describe("Entity implementation tests", () => {
       if (Either.isLeft(result)) {
         // name и info оба невалидны — оба должны присутствовать
         expect(result.left).toEqual({
-          name: ["Name can`t be empty"],
+          name: ["Имя слишком длинное (макс. 20 символов)"],
           lastName: ["Lastname must be a string"],
           info: ["Info must be a string"],
           "contacts.1.value": ["Invalid email"],
