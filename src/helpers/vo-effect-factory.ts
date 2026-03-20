@@ -1,6 +1,6 @@
 import { left, right } from "effect/Either";
 import * as v from "valibot";
-import type { VO } from "@/core/vo.js";
+import type { VO } from "../core/vo.js";
 
 export function voEffectFactory<S extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>(
   value: unknown,
