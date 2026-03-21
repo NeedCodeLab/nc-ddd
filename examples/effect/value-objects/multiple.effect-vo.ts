@@ -23,7 +23,7 @@ export class MultipleEffectVO extends VO<typeof MultipleEffectVOSchema> {
     super(props);
   }
 
-  public static create = (val: MultipleEffectVOProps, key?: string) => {
+  public static create = (val: MultipleEffectVOProps, key: string) => {
     return voEffectFactory(val, MultipleEffectVOSchema, (props) => new MultipleEffectVO(props), key);
   };
 }

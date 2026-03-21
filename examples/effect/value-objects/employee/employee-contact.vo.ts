@@ -24,7 +24,7 @@ export class EmployeeContactVO extends VO<typeof EmployeeContactVOSchema> {
     super(props);
   }
 
-  public static create = (val: v.InferInput<typeof EmployeeContactVOSchema>, key?: string) => {
+  public static create = (val: v.InferInput<typeof EmployeeContactVOSchema>, key = "contact") => {
     return voEffectFactory(val, EmployeeContactVOSchema, (props) => new EmployeeContactVO(props), key);
   };
 }

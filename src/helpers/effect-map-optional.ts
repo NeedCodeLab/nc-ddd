@@ -1,24 +1,22 @@
-import { type Either, right } from "effect/Either";
+import { Effect } from "effect";
 
-type MapOptionalResult<V, L, R> = undefined extends V
+type MapOptionalResult<V, E, A> = undefined extends V
   ? null extends V
-    ? Either<L, R | null | undefined>
-    : Either<L, R | undefined>
+    ? Effect.Effect<A | null | undefined, E>
+    : Effect.Effect<A | undefined, E>
   : null extends V
-    ? Either<L, R | null>
-    : Either<L, R>;
+    ? Effect.Effect<A | null, E>
+    : Effect.Effect<A, E>;
 
-export function effectMapOptional<V, L, R>(
+export function effectMapOptional<V, E, A>(
   value: V,
-  factory: (value: NonNullable<V>) => Either<L, R>,
-) {
+  factory: (value: NonNullable<V>) => Effect.Effect<A, E>,
+): MapOptionalResult<V, E, A> {
   if (value === undefined) {
-    return right(undefined);
+    return Effect.succeed(undefined) as unknown as MapOptionalResult<V, E, A>;
   }
-
   if (value === null) {
-    return right(null);
+    return Effect.succeed(null) as unknown as MapOptionalResult<V, E, A>;
   }
-
-  return factory(value as NonNullable<V>) as MapOptionalResult<V, L, R>;
+  return factory(value as NonNullable<V>) as unknown as MapOptionalResult<V, E, A>;
 }

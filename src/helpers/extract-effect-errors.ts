@@ -1,65 +1,39 @@
 import { Option } from "effect";
+import type { FieldErrors } from "./vo-effect-factory";
 
-// ─── Хелперы ─────────────────────────────────────────────────────────────────
+function mergeInto(result: FieldErrors, value: unknown): void {
+  // FieldErrors — плоский объект с массивами строк
+  // { "contacts.1.value": ["Invalid email"] }
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    for (const [path, messages] of Object.entries(value)) {
+      if (!Array.isArray(messages)) continue;
+      result[path] = result[path]
+        ? [...result[path], ...(messages as string[])]
+        : (messages as string[]);
+    }
+    return;
+  }
 
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((v) => typeof v === "string");
+  // Массив Option-ов — вложенный Effect.all
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      unwrapOption(result, item);
+    }
+  }
 }
 
-function isOptionArray(value: unknown): value is Option.Option<unknown>[] {
-  return Array.isArray(value) && value.every(Option.isOption);
+function unwrapOption(result: FieldErrors, raw: unknown): void {
+  if (!Option.isOption(raw) || Option.isNone(raw)) return;
+  mergeInto(result, raw.value);
 }
 
-// ─── Основная функция ────────────────────────────────────────────────────────
+export function extractEffectErrors(cause: unknown): FieldErrors {
+  const result: FieldErrors = {};
 
-export function extractEffectErrors(input: Record<string, unknown>): Record<string, string[]> {
-  const result: Record<string, string[]> = {};
+  if (typeof cause !== "object" || cause === null) return result;
 
-  for (const [key, raw] of Object.entries(input)) {
-    // Пропускаем всё что не Option
-    if (!Option.isOption(raw)) continue;
-    if (Option.isNone(raw)) continue;
-
-    const value = raw.value;
-
-    if (!value) continue;
-
-    // Простой массив строк: { name: Some(["Name can't be empty"]) }
-    if (isStringArray(value)) {
-      result[key] = value;
-      continue;
-    }
-
-    // Массив Option-ов: { contacts: Some([Some({ "contacts.0": { value: [...] } })]) }
-    if (isOptionArray(value)) {
-      for (const item of value) {
-        if (Option.isNone(item)) continue;
-
-        const inner = item.value;
-
-        if (typeof inner === "object" && inner !== null) {
-          for (const [nestedKey, nestedVal] of Object.entries(inner)) {
-            if (typeof nestedVal === "object" && nestedVal !== null) {
-              for (const [fieldKey, fieldVal] of Object.entries(nestedVal)) {
-                if (isStringArray(fieldVal)) {
-                  // "contacts.0" + "." + "value" = "contacts.0.value"
-                  result[`${nestedKey}.${fieldKey}`] = fieldVal;
-                }
-              }
-            }
-          }
-        }
-      }
-      continue;
-    }
-
-    // Вложенный объект: рекурсия
-    if (typeof value === "object") {
-      const nested = extractEffectErrors(value as Record<string, unknown>);
-      for (const [nestedKey, val] of Object.entries(nested)) {
-        result[`${key}.${nestedKey}`] = val;
-      }
-    }
+  for (const raw of Object.values(cause)) {
+    unwrapOption(result, raw);
   }
 
   return result;

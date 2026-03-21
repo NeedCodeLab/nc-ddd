@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <For tests> */
 import { randomUUID } from "node:crypto";
 import { Effect, Either, pipe } from "effect";
 import { effectMapOptional } from "@/helpers/effect-map-optional";
@@ -33,19 +34,22 @@ function createEntity(props: EmployeeProps) {
   return pipe(
     Effect.all(
       {
-        id: IdVO.create(props.id),
-        name: EmployeeNameVO.create(props.name),
-        lastName: effectMapOptional(props.lastName, (v) => EmployeeLastNameVO.create(v)),
+        id: IdVO.create(props.id, "id"),
+        name: EmployeeNameVO.create(props.name, "name"),
         role: EmployeeRoleVO.create(props.role),
-        info: EmployeeInfoVO.create(props.info as any),
+        lastName: effectMapOptional(props.lastName, (v) =>
+          EmployeeLastNameVO.create(v, "lastName"),
+        ),
+        info: EmployeeInfoVO.create(props.info, "info"),
         contacts: Effect.all(
           props.contacts.map((contact, i) => EmployeeContactVO.create(contact, `contacts.${i}`)),
           { mode: "validate" },
         ),
       },
-      { mode: "validate" }, // собираем ВСЕ ошибки, не останавливаемся на первой
+      { mode: "validate" },
     ),
-    Effect.mapError((cause) => extractEffectErrors(cause)),
+    Effect.mapError(extractEffectErrors),
+    // Effect.tapError((cause) => Effect.log(cause)),
     Effect.map((data) =>
       EmployeeEffect.create({
         id: data.id,
@@ -56,7 +60,6 @@ function createEntity(props: EmployeeProps) {
         lastName: data.lastName ?? null,
       }),
     ),
-    // Effect.tap((cause) => Effect.log(cause)),
     Effect.either, // оборачиваем в Either — runSync не бросит исключение
     Effect.runSync,
   );
