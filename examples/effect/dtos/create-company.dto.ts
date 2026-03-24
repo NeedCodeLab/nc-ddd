@@ -1,12 +1,12 @@
-import * as v from "valibot";
-import { CreateEmployeeDTOSchema } from "./create-employee.dto";
-import { CompanyNameVOSchema } from "../value-objects/company/company-name.vo";
-import { IdVOSchema } from "../value-objects/id.vo";
+import type { CreateEmployeeDTO } from "./create-employee.dto";
 
-export const CreateCompanyDTOSchema = v.object({
-  id: IdVOSchema,
-  companyName: CompanyNameVOSchema,
-  employees: v.array(CreateEmployeeDTOSchema),
-});
-
-export type CreateCompanyDTO = v.InferInput<typeof CreateCompanyDTOSchema>;
+/**
+ * Тип для DTO компании.
+ * Используется только для типизации входных данных.
+ * Валидация происходит на уровне Value Objects.
+ */
+export interface CreateCompanyDTO {
+  id: string;
+  companyName: string;
+  employees: CreateEmployeeDTO[];
+}

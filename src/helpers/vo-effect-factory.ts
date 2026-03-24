@@ -1,8 +1,7 @@
 import { Effect } from "effect";
 import * as v from "valibot";
 import type { VO } from "../core/vo.js";
-
-export type FieldErrors = Record<string, string[]>;
+import type { FieldErrors } from "./types.js";
 
 export function voEffectFactory<S extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>(
   value: unknown,

@@ -1,15 +1,21 @@
 import { Option } from "effect";
-import type { FieldErrors } from "./vo-effect-factory";
+import type { FieldErrors } from "./types";
 
-function mergeInto(result: FieldErrors, value: unknown): void {
+function mergeInto(result: FieldErrors, value: unknown, parentKey?: string): void {
   // FieldErrors — плоский объект с массивами строк
   // { "contacts.1.value": ["Invalid email"] }
   if (typeof value === "object" && value !== null && !Array.isArray(value)) {
     for (const [path, messages] of Object.entries(value)) {
-      if (!Array.isArray(messages)) continue;
-      result[path] = result[path]
-        ? [...result[path], ...(messages as string[])]
-        : (messages as string[]);
+      const fullKey = parentKey ? `${parentKey}.${path}` : path;
+
+      if (Array.isArray(messages)) {
+        result[fullKey] = result[fullKey]
+          ? [...result[fullKey], ...(messages as string[])]
+          : (messages as string[]);
+      } else if (typeof messages === "object" && messages !== null) {
+        // Вложенный объект ошибок - рекурсивно мерджим с полным ключом
+        mergeInto(result, messages, fullKey);
+      }
     }
     return;
   }
@@ -23,8 +29,23 @@ function mergeInto(result: FieldErrors, value: unknown): void {
 }
 
 function unwrapOption(result: FieldErrors, raw: unknown): void {
-  if (!Option.isOption(raw) || Option.isNone(raw)) return;
-  mergeInto(result, raw.value);
+  if (!Option.isOption(raw)) return;
+
+  if (Option.isNone(raw)) return;
+
+  // Извлекаем значение из Option
+  const value = raw.value;
+
+  // Если значение - массив, обрабатываем каждый элемент
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      unwrapOption(result, item);
+    }
+    return;
+  }
+
+  // Если значение - объект, мерджим его
+  mergeInto(result, value);
 }
 
 export function extractEffectErrors(cause: unknown): FieldErrors {
@@ -35,6 +56,5 @@ export function extractEffectErrors(cause: unknown): FieldErrors {
   for (const raw of Object.values(cause)) {
     unwrapOption(result, raw);
   }
-
   return result;
 }

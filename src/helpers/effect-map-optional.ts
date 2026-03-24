@@ -18,5 +18,5 @@ export function effectMapOptional<V, E, A>(
   if (value === null) {
     return Effect.succeed(null) as unknown as MapOptionalResult<V, E, A>;
   }
-  return factory(value as NonNullable<V>) as unknown as MapOptionalResult<V, E, A>;
+  return factory(value as NonNullable<V>);
 }

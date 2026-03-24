@@ -1,159 +1,64 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: <For tests> */
 import { randomUUID } from "node:crypto";
-import { Effect, Either, pipe } from "effect";
-import { effectMapOptional } from "@/helpers/effect-map-optional";
-import { extractEffectErrors } from "@/helpers/extract-effect-errors";
+import { Effect, pipe } from "effect/index";
 import { EmployeeEffect } from "../examples/effect/entities/employee.effect-entity";
-import {
-  EmployeeContactVO,
-  type EmployeeContactVOProps,
-} from "../examples/effect/value-objects/employee/employee-contact.vo";
-import { EmployeeInfoVO } from "../examples/effect/value-objects/employee/employee-info.vo";
-import { EmployeeLastNameVO } from "../examples/effect/value-objects/employee/employee-last-name.vo";
-import { EmployeeNameVO } from "../examples/effect/value-objects/employee/employee-name.vo";
-import {
-  EmployeeRoleVO,
-  RoleEnum,
-} from "../examples/effect/value-objects/employee/employee-role.vo";
-import { IdVO } from "../examples/effect/value-objects/id.vo";
-
-// ─── Типы ────────────────────────────────────────────────────────────────────
-
-type EmployeeProps = {
-  id: string;
-  name: string;
-  lastName: string | null;
-  role: RoleEnum;
-  info: string; // намеренно допускаем невалидный тип для тестов
-  contacts: EmployeeContactVOProps[];
-};
-
-// ─── Фабрика ─────────────────────────────────────────────────────────────────
-
-function createEntity(props: EmployeeProps) {
-  return pipe(
-    Effect.all(
-      {
-        id: IdVO.create(props.id, "id"),
-        name: EmployeeNameVO.create(props.name, "name"),
-        role: EmployeeRoleVO.create(props.role),
-        lastName: effectMapOptional(props.lastName, (v) =>
-          EmployeeLastNameVO.create(v, "lastName"),
-        ),
-        info: EmployeeInfoVO.create(props.info, "info"),
-        contacts: Effect.all(
-          props.contacts.map((contact, i) => EmployeeContactVO.create(contact, `contacts.${i}`)),
-          { mode: "validate" },
-        ),
-      },
-      { mode: "validate" },
-    ),
-    Effect.mapError(extractEffectErrors),
-    // Effect.tapError((cause) => Effect.log(cause)),
-    Effect.map((data) =>
-      EmployeeEffect.create({
-        id: data.id,
-        name: data.name,
-        info: data.info,
-        role: data.role,
-        contacts: data.contacts,
-        lastName: data.lastName ?? null,
-      }),
-    ),
-    Effect.either, // оборачиваем в Either — runSync не бросит исключение
-    Effect.runSync,
-  );
-}
-
-// ─── Фикстуры ────────────────────────────────────────────────────────────────
-
-const invalidProps: EmployeeProps = {
-  id: randomUUID(),
-  name: "asdasfdasfasdasdfasdfasdfgasdgasfdgas", // невалидно: пустая строка
-  lastName: 123 as any,
-  role: RoleEnum.staff,
-  info: 1 as any, // невалидно: число вместо строки
-  contacts: [
-    { type: "email", value: "maile@mail.ru" },
-    { type: "email", value: "mailemail.ru" },
-  ],
-};
-
-const validProps: EmployeeProps = {
-  id: randomUUID(),
-  name: "John",
-  lastName: null,
-  role: RoleEnum.staff,
-  info: "A valuable team member.",
-  contacts: [{ type: "email", value: "mail@email.ru" }],
-};
-
-// ─── Тесты ───────────────────────────────────────────────────────────────────
+import { RoleEnum } from "../examples/effect/value-objects/employee/employee-role.vo";
 
 describe("Entity implementation tests", () => {
-  describe("невалидные пропсы", () => {
-    it("должен вернуть Left с ошибками", () => {
-      const result = createEntity(invalidProps);
+  const employeeId1 = randomUUID();
+  // const employeeId2 = randomUUID();
 
-      expect(Either.isLeft(result)).toBe(true);
-    });
-
-    it("должен содержать ошибку для поля name", () => {
-      const result = createEntity(invalidProps);
-
-      if (Either.isLeft(result)) {
-        expect(result.left).toMatchObject({
-          name: expect.any(Array),
-        });
-        expect(result.left?.name?.length).toBeGreaterThan(0);
-      }
-    });
-
-    it("должен содержать ошибку для поля info", () => {
-      const result = createEntity(invalidProps);
-
-      if (Either.isLeft(result)) {
-        expect(result.left).toMatchObject({
-          info: expect.any(Array),
-        });
-        expect(result.left?.info?.length).toBeGreaterThan(0);
-      }
-    });
-
-    it("должен собрать ВСЕ ошибки сразу (не останавливаться на первой)", () => {
-      const result = createEntity(invalidProps);
-
-      if (Either.isLeft(result)) {
-        // name и info оба невалидны — оба должны присутствовать
-        expect(result.left).toEqual({
-          name: ["Имя слишком длинное (макс. 20 символов)"],
-          lastName: ["Lastname must be a string"],
-          info: ["Info must be a string"],
-          "contacts.1.value": ["Invalid email"],
-        });
-      }
-    });
+  const validEmployeeProps = {
+    id: employeeId1,
+    name: "John Doe",
+    role: RoleEnum.staff,
+    info: "A valuable team member.",
+    contacts: [{ type: "email" as const, value: "john.doe@example.com" }],
+  };
+  const invalidEmployeeProps = {
+    id: employeeId1,
+    name: "",
+    role: RoleEnum.staff,
+    // biome-ignore lint/suspicious/noExplicitAny: <for tests>
+    info: 1 as any,
+    contacts: [{ type: "email" as const, value: "john.doeexample.com" }],
+  };
+  it("should throw error an entity with valid properties", () => {
+    pipe(
+      EmployeeEffect.createFromDTO(validEmployeeProps),
+      Effect.match({
+        onFailure: (_e) => {
+          fail("Expected a Right, but received a Left");
+        },
+        onSuccess: (employee) => {
+          expect(employee.primitive).toEqual({
+            id: employeeId1,
+            name: "John Doe",
+            role: "staff",
+            info: "A valuable team member.",
+            contacts: [{ type: "email", value: "john.doe@example.com" }],
+            lastName: null,
+          });
+        },
+      }),
+      Effect.runSync,
+    );
   });
-
-  describe("валидные пропсы", () => {
-    it("должен вернуть Right с данными", () => {
-      const result = createEntity(validProps);
-
-      expect(Either.isRight(result)).toBe(true);
-    });
-
-    it("должен содержать корректные данные сущности", () => {
-      const result = createEntity(validProps);
-
-      if (Either.isRight(result)) {
-        expect(result.right.primitive).toMatchObject({
-          name: "John",
-          lastName: null,
-          role: RoleEnum.staff,
-          info: "A valuable team member.",
-          contacts: [{ type: "email", value: "mail@email.ru" }],
-        });
-      }
-    });
+  it("should throw error an entity with invalid properties", () => {
+    pipe(
+      EmployeeEffect.createFromDTO(invalidEmployeeProps),
+      Effect.match({
+        onFailure: (error) => {
+          expect(error).toEqual({
+            name: ["Name cannot be empty"],
+            info: ["Info must be a string"],
+            "contacts.0.value": ["Invalid email format"],
+          });
+        },
+        onSuccess: () => {
+          fail("Expected a Right, but received a Left");
+        },
+      }),
+      Effect.runSync,
+    );
   });
 });

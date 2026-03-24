@@ -1,20 +1,33 @@
-import * as v from "valibot";
-import { VO } from "@/core/vo";
-import { voEffectFactory } from "@/helpers/vo-effect-factory";
+import { Effect } from "effect";
+import { VOEffect } from "@/effect/core/vo-effect";
+import { FieldErrors } from "@/helpers/types";
 
-export const CompanyNameVOSchema = v.pipe(
-  v.string("Name must be a string"),
-  v.trim(),
-  v.nonEmpty("Name can`t be empty"),
-);
-
-export type CompanyNameVOProps = v.InferOutput<typeof CompanyNameVOSchema>;
-
-export class CompanyNameVO extends VO<typeof CompanyNameVOSchema> {
-  private constructor(props: CompanyNameVOProps) {
-    super(props);
+/**
+ * Value Object для названия компании.
+ * Проверяет, что название — непустая строка длиной не более 100 символов.
+ */
+export class CompanyNameVO extends VOEffect<string> {
+  private constructor(value: string) {
+    super(value);
   }
-  public static create = (val: v.InferInput<typeof CompanyNameVOSchema>, key?: string) => {
-    return voEffectFactory(val, CompanyNameVOSchema, (props) => new CompanyNameVO(props), key);
-  };
+
+  /**
+   * Фабричный метод для создания CompanyNameVO.
+   * @param value — значение названия компании
+   * @param key — ключ поля для ошибок (по умолчанию "companyName")
+   * @returns Effect с CompanyNameVO или ошибкой валидации
+   */
+  public static create(value: unknown, key: string): Effect.Effect<CompanyNameVO, FieldErrors> {
+    if (typeof value !== "string") {
+      return Effect.fail({ [key]: ["Company name must be a string"] });
+    }
+    const trimmed = value.trim();
+    if (trimmed === "") {
+      return Effect.fail({ [key]: ["Company name cannot be empty"] });
+    }
+    if (trimmed.length > 100) {
+      return Effect.fail({ [key]: ["Company name cannot be more than 100 characters"] });
+    }
+    return Effect.succeed(new CompanyNameVO(trimmed));
+  }
 }

@@ -1,21 +1,29 @@
-import * as v from "valibot";
-import { VO } from "@/core/vo";
-import { voEffectFactory } from "@/helpers/vo-effect-factory";
+import { Effect } from "effect";
+import { VOEffect } from "@/effect/core/vo-effect";
+import { FieldErrors } from "@/helpers/types";
 
-export const IdVOSchema = v.pipe(
-  v.string("Id must be a string"),
-  v.trim(),
-  v.nonEmpty("Id can`t be empty"),
-  v.uuid("Invalid Id"),
-);
-
-type EmployeeIdVOProps = v.InferOutput<typeof IdVOSchema>;
-
-export class IdVO extends VO<typeof IdVOSchema> {
-  private constructor(props: EmployeeIdVOProps) {
-    super(props);
+/**
+ * Value Object для ID.
+ * Проверяет, что значение является непустой строкой.
+ */
+export class IdVO extends VOEffect<string> {
+  private constructor(value: string) {
+    super(value);
   }
-  public static create = (val: v.InferInput<typeof IdVOSchema>, key = "id") => {
-    return voEffectFactory(val, IdVOSchema, (props) => new IdVO(props), key);
-  };
+
+  /**
+   * Фабричный метод для создания IdVO.
+   * @param value — значение ID
+   * @param key — ключ поля для ошибок (по умолчанию "id")
+   * @returns Effect с IdVO или ошибкой валидации
+   */
+  public static create(value: unknown, key: string): Effect.Effect<IdVO, FieldErrors> {
+    if (typeof value !== "string") {
+      return Effect.fail({ [key]: ["Id must be a string"] });
+    }
+    if (value.trim() === "") {
+      return Effect.fail({ [key]: ["Id cannot be empty"] });
+    }
+    return Effect.succeed(new IdVO(value.trim()));
+  }
 }

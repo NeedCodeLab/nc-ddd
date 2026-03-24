@@ -1,33 +1,33 @@
-import * as v from "valibot";
 import { Effect } from "effect";
-import { VO } from "@/core/vo";
-import { voEffectFactory, type FieldErrors } from "@/helpers/vo-effect-factory";
+import { VOEffect } from "@/effect/core/vo-effect";
+import { FieldErrors } from "@/helpers/types";
 
-export const EmployeeNameVOSchema = v.pipe(
-  v.string("Name must be a string"),
-  v.trim(),
-  v.nonEmpty("Name can`t be empty"),
-);
-
-export type EmployeeNameVOProps = v.InferOutput<typeof EmployeeNameVOSchema>;
-
-export class EmployeeNameVO extends VO<typeof EmployeeNameVOSchema> {
-  private constructor(props: EmployeeNameVOProps) {
-    super(props);
+/**
+ * Value Object для имени сотрудника.
+ * Проверяет, что имя — непустая строка длиной не более 20 символов.
+ */
+export class EmployeeNameVO extends VOEffect<string> {
+  private constructor(value: string) {
+    super(value);
   }
 
-  public static create = (
-    val: v.InferInput<typeof EmployeeNameVOSchema>,
-    key = "name",
-  ): Effect.Effect<EmployeeNameVO, FieldErrors> => {
-    return Effect.flatMap(
-      voEffectFactory(val, EmployeeNameVOSchema, (props) => new EmployeeNameVO(props), key),
-      (vo) => {
-        if (vo.value.length > 20) {
-          return Effect.fail({ [key]: ["Имя слишком длинное (макс. 20 символов)"] });
-        }
-        return Effect.succeed(vo);
-      },
-    );
-  };
+  /**
+   * Фабричный метод для создания EmployeeNameVO.
+   * @param value — значение имени
+   * @param key — ключ поля для ошибок (по умолчанию "name")
+   * @returns Effect с EmployeeNameVO или ошибкой валидации
+   */
+  public static create(value: unknown, key: string): Effect.Effect<EmployeeNameVO, FieldErrors> {
+    if (typeof value !== "string") {
+      return Effect.fail({ [key]: ["Name must be a string"] });
+    }
+    const trimmed = value.trim();
+    if (trimmed === "") {
+      return Effect.fail({ [key]: ["Name cannot be empty"] });
+    }
+    if (trimmed.length > 20) {
+      return Effect.fail({ [key]: ["Имя слишком длинное (макс. 20 символов)"] });
+    }
+    return Effect.succeed(new EmployeeNameVO(trimmed));
+  }
 }

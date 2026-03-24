@@ -1,20 +1,30 @@
-import * as v from "valibot";
-import { VO } from "@/core/vo";
-import { voEffectFactory } from "@/helpers/vo-effect-factory";
+import { Effect } from "effect";
+import { VOEffect } from "@/effect/core/vo-effect";
+import { FieldErrors } from "@/helpers/types";
 
-export const EmployeeLastNameVOSchema = v.pipe(
-  v.string("Lastname must be a string"),
-  v.trim(),
-  v.nonEmpty("Lastname can`t be empty"),
-);
-
-export type EmployeeLastNameVOProps = v.InferOutput<typeof EmployeeLastNameVOSchema>;
-
-export class EmployeeLastNameVO extends VO<typeof EmployeeLastNameVOSchema> {
-  private constructor(props: EmployeeLastNameVOProps) {
-    super(props);
+/**
+ * Value Object для фамилии сотрудника.
+ * Проверяет, что фамилия — непустая строка.
+ */
+export class EmployeeLastNameVO extends VOEffect<string> {
+  private constructor(value: string) {
+    super(value);
   }
-  public static create = (val: v.InferInput<typeof EmployeeLastNameVOSchema>, key="lastName") => {
-    return voEffectFactory(val, EmployeeLastNameVOSchema, (props) => new EmployeeLastNameVO(props), key);
-  };
+
+  /**
+   * Фабричный метод для создания EmployeeLastNameVO.
+   * @param value — значение фамилии
+   * @param key — ключ поля для ошибок (по умолчанию "lastName")
+   * @returns Effect с EmployeeLastNameVO или ошибкой валидации
+   */
+  public static create(value: unknown, key: string): Effect.Effect<EmployeeLastNameVO, FieldErrors> {
+    if (typeof value !== "string") {
+      return Effect.fail({ [key]: ["Last name must be a string"] });
+    }
+    const trimmed = value.trim();
+    if (trimmed === "") {
+      return Effect.fail({ [key]: ["Last name cannot be empty"] });
+    }
+    return Effect.succeed(new EmployeeLastNameVO(trimmed));
+  }
 }
