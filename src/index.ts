@@ -7,5 +7,5 @@ export * from "./effect/core/vo-effect.js";
 export * from "./errors/business-rule.error.js";
 export * from "./errors/validation.error.js";
 export * from "./helpers/effect-map-optional.js";
-export * from "./helpers/types.js";
+export * from "./helpers/extract-validation-errors.js";
 export * from "./helpers/vo-factory.js";
