@@ -1,10 +1,10 @@
 import { Option } from "effect";
+import { EffectBusinessRuleError } from "../errors/business-rule.error.js";
 import {
   EffectFieldError,
   ValidationError,
   type ValidationErrorMap,
-} from "@/errors/validation.error";
-import { EffectBusinessRuleError } from "../errors/business-rule.error.js";
+} from "../errors/validation.error";
 
 function flattenCause(
   value: unknown,
