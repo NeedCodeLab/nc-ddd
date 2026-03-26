@@ -1,5 +1,6 @@
-import { Effect } from "effect";
 import { VOEffect } from "@/effect/core/vo-effect";
+import { EffectFieldError } from "@/index";
+import { Effect } from "effect";
 
 /**
  * Типы контактов для MultipleEffectVO.
@@ -33,50 +34,50 @@ export class MultipleEffectVO extends VOEffect<MultipleEffectVOProps> {
   public static create(
     value: unknown,
     key = "value",
-  ): Effect.Effect<MultipleEffectVO, { [k: string]: string[] }> {
+  ): Effect.Effect<MultipleEffectVO, EffectFieldError> {
     // Проверка, что значение — объект
     if (typeof value !== "object" || value === null || Array.isArray(value)) {
-      return Effect.fail({ [key]: ["Value must be an object"] });
+      return Effect.fail(new EffectFieldError({ message: "Value must be an object" }));
     }
 
     const obj = value as Record<string, unknown>;
 
     // Проверка типа
     if (obj.type !== "email" && obj.type !== "foo" && obj.type !== "date") {
-      return Effect.fail({ [key]: ["Type must be 'email', 'foo', or 'date'"] });
+      return Effect.fail(new EffectFieldError({ message: "Type must be 'email', 'foo', or 'date'" }));
     }
 
     // Проверка значения
     if (typeof obj.value !== "string") {
-      return Effect.fail({ [`${key}.value`]: ["Value must be a string"] });
+      return Effect.fail(new EffectFieldError({ message: "Value must be a string" }));
     }
 
     const trimmedValue = obj.value.trim();
     if (trimmedValue === "") {
-      return Effect.fail({ [`${key}.value`]: ["Value cannot be empty"] });
+      return Effect.fail(new EffectFieldError({ message: "Value cannot be empty" }));
     }
 
     // Валидация формата в зависимости от типа
     if (obj.type === "email") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(trimmedValue)) {
-        return Effect.fail({ [`${key}.value`]: ["Invalid email format"] });
+        return Effect.fail(new EffectFieldError({ message: "Invalid email format" }));
       }
     } else if (obj.type === "foo") {
       try {
         new URL(trimmedValue);
       } catch {
-        return Effect.fail({ [`${key}.value`]: ["Invalid URL format"] });
+        return Effect.fail(new EffectFieldError({ message: "Invalid URL format" }));
       }
     } else if (obj.type === "date") {
       const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!isoDateRegex.test(trimmedValue)) {
-        return Effect.fail({ [`${key}.value`]: ["Invalid ISO date format. Use YYYY-MM-DD"] });
+        return Effect.fail(new EffectFieldError({ message: "Invalid ISO date format. Use YYYY-MM-DD" }));
       }
       // Дополнительная проверка валидности даты
       const date = new Date(trimmedValue);
       if (isNaN(date.getTime())) {
-        return Effect.fail({ [`${key}.value`]: ["Invalid date"] });
+        return Effect.fail(new EffectFieldError({ message: "Invalid date" }));
       }
     }
 

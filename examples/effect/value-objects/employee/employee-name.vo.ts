@@ -1,6 +1,6 @@
-import { Effect } from "effect";
 import { VOEffect } from "@/effect/core/vo-effect";
-import { FieldErrors } from "@/helpers/types";
+import { EffectFieldError } from "@/index";
+import { Effect } from "effect";
 
 /**
  * Value Object для имени сотрудника.
@@ -14,19 +14,18 @@ export class EmployeeNameVO extends VOEffect<string> {
   /**
    * Фабричный метод для создания EmployeeNameVO.
    * @param value — значение имени
-   * @param key — ключ поля для ошибок (по умолчанию "name")
    * @returns Effect с EmployeeNameVO или ошибкой валидации
    */
-  public static create(value: unknown, key: string): Effect.Effect<EmployeeNameVO, FieldErrors> {
+  public static create(value: unknown, errorKey: string): Effect.Effect<EmployeeNameVO, EffectFieldError> {
     if (typeof value !== "string") {
-      return Effect.fail({ [key]: ["Name must be a string"] });
+      return Effect.fail(new EffectFieldError({ message: "Name must be a string", errorKey }));
     }
     const trimmed = value.trim();
     if (trimmed === "") {
-      return Effect.fail({ [key]: ["Name cannot be empty"] });
+      return Effect.fail(new EffectFieldError({ message: "Name cannot be empty", errorKey }));
     }
     if (trimmed.length > 20) {
-      return Effect.fail({ [key]: ["Имя слишком длинное (макс. 20 символов)"] });
+      return Effect.fail(new EffectFieldError({ message: "Name cannot be more than 20 characters", errorKey }));
     }
     return Effect.succeed(new EmployeeNameVO(trimmed));
   }

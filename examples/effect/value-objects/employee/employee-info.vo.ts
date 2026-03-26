@@ -1,6 +1,6 @@
-import { Effect } from "effect";
 import { VOEffect } from "@/effect/core/vo-effect";
-import { FieldErrors } from "@/helpers/types";
+import { EffectFieldError } from "@/index";
+import { Effect } from "effect";
 
 /**
  * Value Object для информации о сотруднике.
@@ -14,19 +14,18 @@ export class EmployeeInfoVO extends VOEffect<string> {
   /**
    * Фабричный метод для создания EmployeeInfoVO.
    * @param value — значение информации
-   * @param key — ключ поля для ошибок (по умолчанию "info")
    * @returns Effect с EmployeeInfoVO или ошибкой валидации
    */
-  public static create(value: unknown, key: string): Effect.Effect<EmployeeInfoVO, FieldErrors> {
+  public static create(value: unknown, errorKey: string): Effect.Effect<EmployeeInfoVO, EffectFieldError> {
     if (typeof value !== "string") {
-      return Effect.fail({ [key]: ["Info must be a string"] });
+      return Effect.fail(new EffectFieldError({ message: "Info must be a string", errorKey }));
     }
     const trimmed = value.trim();
     if (trimmed === "") {
-      return Effect.fail({ [key]: ["Info cannot be empty"] });
+      return Effect.fail(new EffectFieldError({ message: "Info cannot be empty", errorKey }));
     }
     if (trimmed.length > 300) {
-      return Effect.fail({ [key]: ["Info cannot be more than 300 characters"] });
+      return Effect.fail(new EffectFieldError({ message: "Info cannot be more than 300 characters", errorKey }));
     }
     return Effect.succeed(new EmployeeInfoVO(trimmed));
   }

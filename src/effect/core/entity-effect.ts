@@ -5,7 +5,11 @@ import type { VOEffect } from "./vo-effect.js";
  * Тип для допустимых свойств сущности.
  * Свойства могут быть VOEffect, массивами VOEffect, другими EntityEffect, скалярными значениями или null.
  */
-export type AllowedEntityPropValue = VOEffect<unknown> | Array<VOEffect<unknown>>;
+export type AllowedEntityPropValue =
+  | VOEffect<unknown>
+  | Array<VOEffect<unknown>>
+  | EntityEffect<IEntityEffectProps>
+  | Array<EntityEffect<IEntityEffectProps>>;
 
 /**
  * Обязательные свойства для Entity — должен быть id.
@@ -15,16 +19,20 @@ export interface IEntityEffectProps {
 }
 
 /**
- * Тип для извлечения значения из VOEffect или массива VOEffect.
+ * Тип для извлечения значения из VOEffect, EntityEffect или массива этих типов.
  */
 export type InferVOEffect<T> =
   T extends ReadonlyArray<infer U>
     ? U extends VOEffect<infer V>
       ? V[]
-      : never
+      : U extends EntityEffect<infer P>
+        ? InferEntityEffectProps<P>[]
+        : never
     : T extends VOEffect<infer V>
       ? V
-      : never;
+      : T extends EntityEffect<infer P>
+        ? InferEntityEffectProps<P>
+        : never;
 
 /**
  * Тип для извлечения всех свойств сущности как простых значений.

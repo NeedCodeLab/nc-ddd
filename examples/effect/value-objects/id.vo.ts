@@ -1,6 +1,6 @@
-import { Effect } from "effect";
 import { VOEffect } from "@/effect/core/vo-effect";
-import { FieldErrors } from "@/helpers/types";
+import { EffectFieldError } from "@/index";
+import { Effect } from "effect";
 
 /**
  * Value Object для ID.
@@ -14,16 +14,16 @@ export class IdVO extends VOEffect<string> {
   /**
    * Фабричный метод для создания IdVO.
    * @param value — значение ID
-   * @param key — ключ поля для ошибок (по умолчанию "id")
    * @returns Effect с IdVO или ошибкой валидации
    */
-  public static create(value: unknown, key: string): Effect.Effect<IdVO, FieldErrors> {
+  public static create(value: unknown, errorKey: string): Effect.Effect<IdVO, EffectFieldError> {
     if (typeof value !== "string") {
-      return Effect.fail({ [key]: ["Id must be a string"] });
+      return Effect.fail(new EffectFieldError({ message: "Id must be a string", errorKey }));
     }
-    if (value.trim() === "") {
-      return Effect.fail({ [key]: ["Id cannot be empty"] });
+    const trimmed = value.trim();
+    if (trimmed === "") {
+      return Effect.fail(new EffectFieldError({ message: "Id cannot be empty", errorKey }));
     }
-    return Effect.succeed(new IdVO(value.trim()));
+    return Effect.succeed(new IdVO(trimmed));
   }
 }

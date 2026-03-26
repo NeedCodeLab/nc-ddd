@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
+import { tapErrorTag } from "effect/Effect";
 import { Effect, pipe } from "effect/index";
+import type { ValidationError } from "@/index";
 import { EmployeeEffect } from "../examples/effect/entities/employee.effect-entity";
 import { RoleEnum } from "../examples/effect/value-objects/employee/employee-role.vo";
 
@@ -46,16 +48,119 @@ describe("Entity implementation tests", () => {
   it("should throw error an entity with invalid properties", () => {
     pipe(
       EmployeeEffect.createFromDTO(invalidEmployeeProps),
+      tapErrorTag("ValidationError", (e) => {
+        expect(e.errors).toBeDefined();
+        expect(e.errors).toEqual({
+          name: ["Name cannot be empty"],
+          info: ["Info must be a string"],
+          "contacts.0": ["Invalid email format"],
+        });
+        return e;
+      }),
       Effect.match({
         onFailure: (error) => {
-          expect(error).toEqual({
-            name: ["Name cannot be empty"],
+          expect(error._tag === "ValidationError").toBeTruthy();
+          const e = error as ValidationError;
+          expect(e.errors).toEqual({
+            "contacts.0": ["Invalid email format"],
             info: ["Info must be a string"],
-            "contacts.0.value": ["Invalid email format"],
+            name: ["Name cannot be empty"],
           });
         },
         onSuccess: () => {
           fail("Expected a Right, but received a Left");
+        },
+      }),
+      Effect.runSync,
+    );
+  });
+
+  it("should create employee with unique contact types", () => {
+    const employeeWithUniqueContacts = {
+      id: employeeId1,
+      name: "John Doe",
+      role: RoleEnum.staff,
+      info: "A valuable team member.",
+      contacts: [
+        { type: "email" as const, value: "john.doe@example.com" },
+        { type: "phone" as const, value: "79001234567" },
+      ],
+    };
+
+    pipe(
+      EmployeeEffect.createFromDTO(employeeWithUniqueContacts),
+      Effect.match({
+        onFailure: () => {
+          fail("Expected success, but received an error");
+        },
+        onSuccess: (employee) => {
+          expect(employee.primitive.contacts).toHaveLength(2);
+          // biome-ignore lint/style/noNonNullAssertion: <test knows contacts exist>
+          expect(employee.primitive.contacts[0]!.type).toBe("email");
+          // biome-ignore lint/style/noNonNullAssertion: <test knows contacts exist>
+          expect(employee.primitive.contacts[1]!.type).toBe("phone");
+        },
+      }),
+      Effect.runSync,
+    );
+  });
+
+  it("should fail to create employee with duplicate email contacts (BusinessRuleError)", () => {
+    const employeeWithDuplicateEmails = {
+      id: employeeId1,
+      name: "John Doe",
+      role: RoleEnum.staff,
+      info: "A valuable team member.",
+      contacts: [
+        { type: "email" as const, value: "john.doe@example.com" },
+        { type: "email" as const, value: "j.doe@example.com" },
+      ],
+    };
+
+    pipe(
+      EmployeeEffect.createFromDTO(employeeWithDuplicateEmails),
+      Effect.match({
+        onFailure: (error) => {
+          expect(error).toHaveProperty("_tag", "EffectBusinessRuleError");
+          expect(error).toHaveProperty("code", "DUPLICATE_CONTACT_TYPE");
+          expect(error).toHaveProperty(
+            "message",
+            "Employee cannot have multiple contacts of type 'email'",
+          );
+        },
+        onSuccess: () => {
+          fail("Expected BusinessRuleError, but received success");
+        },
+      }),
+      Effect.runSync,
+    );
+  });
+
+  it("should fail to create employee with duplicate phone contacts (BusinessRuleError)", () => {
+    const employeeWithDuplicatePhones = {
+      id: employeeId1,
+      name: "John Doe",
+      role: RoleEnum.staff,
+      info: "A valuable team member.",
+      contacts: [
+        { type: "phone" as const, value: "79001234567" },
+        { type: "phone" as const, value: "79007654321" },
+      ],
+    };
+
+    pipe(
+      EmployeeEffect.createFromDTO(employeeWithDuplicatePhones),
+      Effect.match({
+        onFailure: (error) => {
+          expect(error).toHaveProperty("_tag", "EffectBusinessRuleError");
+          expect(error).toHaveProperty("code", "DUPLICATE_CONTACT_TYPE");
+          expect(error).toHaveProperty(
+            "message",
+            "Employee cannot have multiple contacts of type 'phone'",
+          );
+        },
+        onSuccess: () => {
+          fail("Expected BusinessRuleError, but received success");
         },
       }),
       Effect.runSync,

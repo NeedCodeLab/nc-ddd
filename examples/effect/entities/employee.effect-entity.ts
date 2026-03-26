@@ -6,8 +6,10 @@ import { EmployeeLastNameVO } from "../value-objects/employee/employee-last-name
 import { EmployeeNameVO } from "../value-objects/employee/employee-name.vo";
 import { EmployeeRoleVO } from "../value-objects/employee/employee-role.vo";
 import { IdVO } from "../value-objects/id.vo";
-import { effectMapOptional, extractEffectErrors } from "@/index";
+import { DuplicateContactError } from "@/errors/business-rule.error";
 import { CreateEmployeeDTO } from "../dtos/create-employee.dto";
+import { effectMapOptional } from "@/helpers/effect-map-optional";
+import { extractValidationError } from "@/helpers/extract-validation-errors";
 
 export interface EmployeeProps {
   id: IdVO;
@@ -33,7 +35,7 @@ export class EmployeeEffect extends EntityEffect<EmployeeProps> {
     return Effect.succeed(new EmployeeEffect(props))
   }
 
-  public static createFromDTO(dto: CreateEmployeeDTO, key?: string) {
+  public static createFromDTO(dto: CreateEmployeeDTO) {
     return pipe(
       Effect.all({
         id: IdVO.create(dto.id, "id"),
@@ -46,7 +48,23 @@ export class EmployeeEffect extends EntityEffect<EmployeeProps> {
           { mode: "validate" },
         ),
       }, { mode: "validate" }),
-      Effect.mapError((cause) => key === undefined ? extractEffectErrors(cause): {[key]: extractEffectErrors(cause)}),
+      Effect.mapError((cause) => extractValidationError(cause)),
+      // Проверка на дублирование типов контактов
+      Effect.filterOrFail(
+        (data) => {
+          const contactTypes = data.contacts.map((c) => c.primitive.type);
+          const uniqueTypes = new Set(contactTypes);
+          return contactTypes.length === uniqueTypes.size;
+        },
+        (data) => {
+          const contactTypes = data.contacts.map((c) => c.primitive.type);
+          const duplicates = contactTypes.filter(
+            (type, index) => contactTypes.indexOf(type) !== index,
+          );
+          const duplicateType = duplicates[0] ?? "unknown";
+          return new DuplicateContactError(duplicateType);
+        },
+      ),
       Effect.flatMap((data) => EmployeeEffect.create({
         ...data,
         lastName: data.lastName ?? null

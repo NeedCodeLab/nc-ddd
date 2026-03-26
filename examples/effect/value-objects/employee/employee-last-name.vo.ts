@@ -1,6 +1,6 @@
-import { Effect } from "effect";
 import { VOEffect } from "@/effect/core/vo-effect";
-import { FieldErrors } from "@/helpers/types";
+import { EffectFieldError } from "@/index";
+import { Effect } from "effect";
 
 /**
  * Value Object для фамилии сотрудника.
@@ -14,16 +14,15 @@ export class EmployeeLastNameVO extends VOEffect<string> {
   /**
    * Фабричный метод для создания EmployeeLastNameVO.
    * @param value — значение фамилии
-   * @param key — ключ поля для ошибок (по умолчанию "lastName")
    * @returns Effect с EmployeeLastNameVO или ошибкой валидации
    */
-  public static create(value: unknown, key: string): Effect.Effect<EmployeeLastNameVO, FieldErrors> {
+  public static create(value: unknown, errorKey: string): Effect.Effect<EmployeeLastNameVO, EffectFieldError> {
     if (typeof value !== "string") {
-      return Effect.fail({ [key]: ["Last name must be a string"] });
+      return Effect.fail(new EffectFieldError({ message: "Last name must be a string", errorKey }));
     }
     const trimmed = value.trim();
     if (trimmed === "") {
-      return Effect.fail({ [key]: ["Last name cannot be empty"] });
+      return Effect.fail(new EffectFieldError({ message: "Last name cannot be empty", errorKey }));
     }
     return Effect.succeed(new EmployeeLastNameVO(trimmed));
   }
