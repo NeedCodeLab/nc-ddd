@@ -4,7 +4,7 @@ import {
   EffectFieldError,
   ValidationError,
   type ValidationErrorMap,
-} from "../errors/validation.error";
+} from "../errors/validation.error.js";
 
 function flattenCause(
   value: unknown,
