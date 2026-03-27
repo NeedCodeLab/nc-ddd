@@ -10,8 +10,8 @@ export class EffectFieldError extends Data.TaggedError("EffectFieldError")<{
   errorKey: string;
 }> {}
 
-export type ValidationErrorMap = Record<string, string[]>;
+export type EffectValidationErrorMap = Record<string, string[]>;
 
-export class ValidationError extends Data.TaggedError("ValidationError")<{
-  errors: ValidationErrorMap;
+export class EffectValidationError extends Data.TaggedError("EffectValidationError")<{
+  errors: EffectValidationErrorMap;
 }> {}

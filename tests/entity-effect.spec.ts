@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { tapErrorTag } from "effect/Effect";
 import { Effect, pipe } from "effect/index";
-import type { ValidationError } from "@/index";
+import type { EffectValidationError } from "@/index";
 import { EmployeeEffect } from "../examples/effect/entities/employee.effect-entity";
 import { RoleEnum } from "../examples/effect/value-objects/employee/employee-role.vo";
 
@@ -48,7 +48,7 @@ describe("Entity implementation tests", () => {
   it("should throw error an entity with invalid properties", () => {
     pipe(
       EmployeeEffect.createFromDTO(invalidEmployeeProps),
-      tapErrorTag("ValidationError", (e) => {
+      tapErrorTag("EffectValidationError", (e) => {
         expect(e.errors).toBeDefined();
         expect(e.errors).toEqual({
           name: ["Name cannot be empty"],
@@ -59,8 +59,8 @@ describe("Entity implementation tests", () => {
       }),
       Effect.match({
         onFailure: (error) => {
-          expect(error._tag === "ValidationError").toBeTruthy();
-          const e = error as ValidationError;
+          expect(error._tag === "EffectValidationError").toBeTruthy();
+          const e = error as EffectValidationError;
           expect(e.errors).toEqual({
             "contacts.0": ["Invalid email format"],
             info: ["Info must be a string"],

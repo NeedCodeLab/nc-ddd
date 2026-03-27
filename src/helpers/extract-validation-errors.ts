@@ -2,14 +2,14 @@ import { Option } from "effect";
 import { EffectBusinessRuleError } from "../errors/business-rule.error.js";
 import {
   EffectFieldError,
-  ValidationError,
-  type ValidationErrorMap,
+  EffectValidationError,
+  type EffectValidationErrorMap,
 } from "../errors/validation.error.js";
 
 function flattenCause(
   value: unknown,
   prefix: string,
-  errors: ValidationErrorMap,
+  errors: EffectValidationErrorMap,
 ): EffectBusinessRuleError | null {
   if (!Option.isOption(value) || Option.isNone(value)) return null;
 
@@ -23,7 +23,7 @@ function flattenCause(
     return null;
   }
 
-  if (inner instanceof ValidationError) {
+  if (inner instanceof EffectValidationError) {
     for (const [key, messages] of Object.entries(inner.errors)) {
       const fullKey = `${prefix}.${key}`;
       if (!errors[fullKey]) errors[fullKey] = [];
@@ -54,13 +54,13 @@ function flattenCause(
 
 export function extractValidationError(
   cause: Record<string, unknown>,
-): ValidationError | EffectBusinessRuleError {
-  const errors: ValidationErrorMap = {};
+): EffectValidationError | EffectBusinessRuleError {
+  const errors: EffectValidationErrorMap = {};
 
   for (const [key, value] of Object.entries(cause)) {
     const bizError = flattenCause(value, key, errors);
     if (bizError) return bizError;
   }
 
-  return new ValidationError({ errors });
+  return new EffectValidationError({ errors });
 }

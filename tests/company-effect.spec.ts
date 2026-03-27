@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { Effect, pipe } from "effect/index";
 import type { EffectBusinessRuleError } from "@/errors/business-rule.error";
-import type { ValidationError } from "@/errors/validation.error";
+import type { EffectValidationError } from "@/errors/validation.error";
 import { CompanyEffect } from "../examples/effect/aggregates/company.effect-aggregate";
 import { RoleEnum } from "../examples/effect/value-objects/employee/employee-role.vo";
 
@@ -107,8 +107,8 @@ describe("Company Aggregate implementation tests", () => {
       CompanyEffect.createFromDTO(invalidCompanyDTO),
       Effect.match({
         onFailure: (error) => {
-          expect(error._tag === "ValidationError").toBeTruthy();
-          const e = error as ValidationError;
+          expect(error._tag === "EffectValidationError").toBeTruthy();
+          const e = error as EffectValidationError;
           expect(e.errors).toEqual({
             companyName: ["Company name cannot be empty"],
             "employees.0.name": ["Name cannot be empty"],
@@ -128,8 +128,8 @@ describe("Company Aggregate implementation tests", () => {
       CompanyEffect.createFromDTO(invalidEmployeeInCompanyDTO),
       Effect.match({
         onFailure: (error) => {
-          expect(error._tag === "ValidationError").toBeTruthy();
-          const e = error as ValidationError;
+          expect(error._tag === "EffectValidationError").toBeTruthy();
+          const e = error as EffectValidationError;
           expect(e.errors).toEqual({ "employees.0.contacts.0": ["Invalid email format"] });
         },
         onSuccess: () => {
